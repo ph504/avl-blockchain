@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="tinspin.indexes" type="repository">
+    <properties maven-id="org.tinspin:tinspin-indexes:1.7.1" />
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/tinspin/tinspin-indexes/1.7.1/tinspin-indexes-1.7.1.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/junit/junit/4.10/junit-4.10.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/org/hamcrest/hamcrest-core/1.1/hamcrest-core-1.1.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/ch/ethz/globis/phtree/phtree/2.8.0/phtree-2.8.0.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
