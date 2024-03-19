@@ -8,7 +8,6 @@ import java.util.ArrayList;
 
 public class Node<KVER extends Comparable<KVER>,K extends Comparable<K>, V extends IRowDetails<K, V, KVER>> {
     public Node leftChild, rightChild, parent;
-
     public int height;
 
     protected byte[] digest;
@@ -19,11 +18,19 @@ public class Node<KVER extends Comparable<KVER>,K extends Comparable<K>, V exten
 
     public final int partitionCapacity;
 
+    /*
+    * @berief the constructor takes version and row
+    * @param version is the date, KVER is the type:Date
+    * @param row is the version and key couple is type: TableRowIntDateCols extends IRowDetails
+    * TODO: versioning to be added to the implementation, for now the schema is preserved for future versioning.
+    * */
     public Node(KVER version, V row) throws Exception {
+        // default height is 1.
         this(version, row, 1);
     }
     public Node(KVER version, V row, int partitionCapacity) throws Exception {
 
+        /*the row is defined as the version,key couple and the get key retrieves first column*/
         this.key = row.getKey();
 
         this.partitionCapacity = partitionCapacity;
@@ -32,6 +39,7 @@ public class Node<KVER extends Comparable<KVER>,K extends Comparable<K>, V exten
             value.add(version, row);
         }
 
+        /*the fields defualt values*/
         digest = null;
         leftChild = null;
         rightChild = null;
@@ -39,8 +47,16 @@ public class Node<KVER extends Comparable<KVER>,K extends Comparable<K>, V exten
         height = 1;
     }
 
+    /*
+    * should update digest, during insert, delete, and value change of self and offsprings*/
+    public void updateDigest(){
+
+    }
+
     public static void main(String[] args) {
-        Node head = new Node();
+        // crteate a version and add it as a node
+        // create a row as well containing the nece values
+//        Node head = new Node();
         System.out.println();
     }
 }

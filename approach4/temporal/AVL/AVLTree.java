@@ -21,9 +21,16 @@ public class AVLTree<KVER extends Comparable<KVER>,K extends Comparable<K>,V ext
     AVLTree(KVER initVersion, int partitionCapacity) throws Exception{
         this.currentVersion = initVersion;
         this.partitionCapacity = partitionCapacity;
-        this.head = new Node<>(initVersion, null)
+        this.head = new Node<>(initVersion, null);
     }
-    insert(V row){
+    public void insert(V row){
 
+    }
+
+    // demo tests
+    public static void main(String[] args) {
+        // create a tree with nodes, see if the insert and all operations works as intended
+
+        System.out.println();
     }
 }
