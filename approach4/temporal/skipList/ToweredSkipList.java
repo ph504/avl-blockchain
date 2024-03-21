@@ -35,7 +35,7 @@ public class ToweredSkipList<KVER extends Comparable<KVER>,K extends Comparable<
 		this.currentVersion = initVersion;
 		this.iterationProbability = iterationProbability;
 		this.partitionCapacity = partitionCapacity;
-		this.head = new Tower<>(Tower.TowerType.Head, initVersion, null, 0, this.partitionCapacity);
+		this.head = new Tower<>(Tower.TowerType.HEAD, initVersion, null, 0, this.partitionCapacity);
 		this.head.processLevelDigest(0, null, toweredTypeUtils);
 		this.toweredTypeUtils = toweredTypeUtils;
 	}
