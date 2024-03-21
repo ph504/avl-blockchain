@@ -12,6 +12,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Random;
 
+/**
+* handles digest mostly*/
 public class Utils {
 
     public final static String HASH_DEFAULT = "SHA-256";

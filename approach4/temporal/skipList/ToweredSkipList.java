@@ -53,7 +53,7 @@ public class ToweredSkipList<KVER extends Comparable<KVER>,K extends Comparable<
 		this.currentVersion = nextVersion;
 	}
 
-
+	// for each level calculate the digest to draw forth the digest of tower
 	public void processTowerDigests(int maxLevel, Tower<KVER,K,V> tower) throws Exception {
 		for (int level = 0; level <= maxLevel; level++) {
 			Tower<KVER,K,V> pointedTower = tower.getPointedTower(level);
@@ -101,6 +101,7 @@ public class ToweredSkipList<KVER extends Comparable<KVER>,K extends Comparable<
 		return existingTower;
 	}
 
+	// dirty code, imo, at least has some debugging gimicks but in the wrong place.
 	public static <KVER extends Comparable<KVER>,K extends Comparable<K>,V extends IRowDetails<K,V,KVER>>
 	Tower<KVER,K,V> getNewTower(KVER version, V row, Integer newTowerMaxLevel, int partitionCapacity) throws Exception {
 		if (newTowerMaxLevel == null) {

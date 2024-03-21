@@ -15,8 +15,18 @@ public class SkipListMVIntDateWrapper implements IIndexMVIntDate {
 
     private ExtendedMultiVersionSkipList<Date, Integer, TableRowIntDateCols> index = null;
 
-    public SkipListMVIntDateWrapper(Date initVersion, double iterationProbability, IVersionsToKeysIndex<Date,Integer> versionsToKeysIndex, int partitionCapacity, ToweredTypeUtils<Integer, TableRowIntDateCols> toweredTypeUtils) throws Exception {
-        this.index = new ExtendedMultiVersionSkipList<>(initVersion, iterationProbability, versionsToKeysIndex, partitionCapacity, toweredTypeUtils);
+    public SkipListMVIntDateWrapper(Date initVersion,
+                                    double iterationProbability,
+                                    IVersionsToKeysIndex<Date,Integer> versionsToKeysIndex,
+                                    int partitionCapacity, ToweredTypeUtils<Integer,
+                                    TableRowIntDateCols> toweredTypeUtils)
+            throws Exception {
+        this.index = new ExtendedMultiVersionSkipList<>(
+                initVersion,
+                iterationProbability,
+                versionsToKeysIndex,
+                partitionCapacity,
+                toweredTypeUtils);
     }
 
     @Override

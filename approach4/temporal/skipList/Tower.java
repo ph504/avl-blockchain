@@ -186,6 +186,7 @@ public class Tower<KVER extends Comparable<KVER>,K extends Comparable<K>,V exten
 		}
 	}
 
+	// dirty code
 	private void checkLevelInRange(int level) throws Exception {
 		checkLevelInRange(this, level);
 	}
@@ -197,12 +198,14 @@ public class Tower<KVER extends Comparable<KVER>,K extends Comparable<K>,V exten
 		}
 	}
 
+	// dirty code
 	private static void checkIsValidLevelSize(int level) throws Exception {
 		if (level > ToweredSkipList.MAX_LEVEL || level < 0) {
 			throw new Exception("invalid level");
 		}
 	}
 
+	// dirty code
 	public boolean isHeadTower() throws Exception {
 		return this.towerType == Tower.TowerType.HEAD;
 	}

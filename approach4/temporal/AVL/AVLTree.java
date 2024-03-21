@@ -18,7 +18,13 @@ public class AVLTree<KVER extends Comparable<KVER>,K extends Comparable<K>,V ext
     private final Node<KVER,K,V> head;
 
     //    private KVER currentVersion;
-    AVLTree(KVER initVersion, int partitionCapacity) throws Exception{
+    public AVLTree(KVER initVersion, int partitionCapacity) throws Exception{
+        this.currentVersion = initVersion;
+        this.partitionCapacity = partitionCapacity;
+        this.head = new Node<>(initVersion, null);
+    }
+
+    public AVLTree(KVER initVersion, int partitionCapacity) throws Exception{
         this.currentVersion = initVersion;
         this.partitionCapacity = partitionCapacity;
         this.head = new Node<>(initVersion, null);

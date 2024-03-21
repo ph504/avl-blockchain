@@ -8,7 +8,18 @@ import approach4.valueDataStructures.Version;
 import java.nio.ByteBuffer;
 import java.util.Date;
 
+/**
+ * seems the bucket list DS
+ */
 public class TableRowIntDateColsClassUtils implements ITypeUtils<TableRowIntDateCols> {
+
+    /**
+     * the fucking annoying thing about this function is that this shouldn't be in the bucket list,
+     * this should be in the tower levels I think.
+     * @param obj
+     * @return
+     * @throws Exception
+     */
     @Override
     public byte[] getZeroLevelDigest(TableRowIntDateCols obj) throws Exception {
         Version<Date> objVersion = obj.getVersion();
@@ -32,11 +43,10 @@ public class TableRowIntDateColsClassUtils implements ITypeUtils<TableRowIntDate
         return digest3;
     }
 
+
+    // wtf????????
     @Override
     public TableRowIntDateCols clone(TableRowIntDateCols obj) {
         return obj;
     }
-
-
-
 }

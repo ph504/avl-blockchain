@@ -6,6 +6,13 @@ import approach4.temporal.temporalPartitions.Partitions;
 
 import java.util.ArrayList;
 
+/**
+ * a node in an avlTree (which is binary)
+ * this node has pointers to left child
+ * @param <KVER>
+ * @param <K>
+ * @param <V>
+ */
 public class Node<KVER extends Comparable<KVER>,K extends Comparable<K>, V extends IRowDetails<K, V, KVER>> {
     public Node leftChild, rightChild, parent;
     public int height;

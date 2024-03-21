@@ -197,9 +197,9 @@ public class Main {
     }
 
     /*
-       As the B-tree is browsed, each key is compared with the previously encountered key (elem) to ensure it is strictly greater, 
+       As the B-tree is browsed, each key is compared with the previously encountered key (elem) to ensure it is strictly greater,
        adhering to the expected sorted order of keys in a B-tree. This process validates the integrity and correctness of the B-tree's sorting mechanism.
-    */ 
+    */
     private static boolean btree1() throws IOException, KeyNotFoundException {
         BTree<Long, String> btree = BTreeFactory.createInMemoryBTree( "test", LongSerializer.INSTANCE, StringSerializer.INSTANCE );
         btree.setPageSize(32);
@@ -1018,6 +1018,7 @@ public class Main {
             writeScenarioResultsToFile(pathTempSkipListScenario, skipListIndexRunRes);
 
             // AVL Index Code
+//            index = new XAVLTree();
 
             index = new PHTreeIntDateWrapper();
             Map<String, Object> phTreeIndexRunRes = SearchMVScenarios("phTreeIndex", index, data_, percent);

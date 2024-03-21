@@ -11,7 +11,10 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-/* encapsulates the AVL tree and versionToKeys datastructures together*/
+/**
+ * @author: Arya
+ * encapsulates the AVL tree and versionToKeys datastructures together
+ * */
 public class XAVLTree<KVER extends Comparable<KVER>,K extends Comparable<K>,V extends IRowDetails<K,V,KVER>> implements IIndexMVIntDate {
     // the version that we have as active and is committed right now.
     private KVER currentVersion;
