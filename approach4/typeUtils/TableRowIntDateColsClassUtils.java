@@ -9,12 +9,18 @@ import java.nio.ByteBuffer;
 import java.util.Date;
 
 /**
- * seems the bucket list DS
+ * A definition of a single row in the bucket list which is the partition class
+ * @see approach4.temporal.temporalPartitions.Partition
+ * Partition
+ * @see approach4.valueDataStructures.TableRowIntDateCols
+ * as it seems to be the wrapper
+ * @see
+ * TODO remove this class and move digest elsewhere
  */
 public class TableRowIntDateColsClassUtils implements ITypeUtils<TableRowIntDateCols> {
 
     /**
-     * the fucking annoying thing about this function is that this shouldn't be in the bucket list,
+     * the fucking annoying thing about this function is that this shouldn't be in the bucket list row,
      * this should be in the tower levels I think.
      * @param obj
      * @return

@@ -4,8 +4,8 @@ import approach4.ITypeUtils;
 
 /**
  *
- * @param <K>
- * @param <V>
+ * @param <K> = the key type
+ * @param <V> = the bucket row type
  */
 public class ToweredTypeUtils<K extends Comparable<K>,V> {
     public final ITypeUtils<K> kTypeUtils;

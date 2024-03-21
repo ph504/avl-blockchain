@@ -11,8 +11,16 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * TODO: remove this whole class, is garbage and serves no purpose other than wasting memory and energy to read clean code
+ */
 public class SkipListMVIntDateWrapper implements IIndexMVIntDate {
 
+    /**
+     * KVER=Date
+     * K=INT
+     * V=Bucket row (TableRowIntDateCols)
+     */
     private ExtendedMultiVersionSkipList<Date, Integer, TableRowIntDateCols> index = null;
 
     public SkipListMVIntDateWrapper(Date initVersion,
