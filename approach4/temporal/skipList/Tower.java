@@ -204,7 +204,7 @@ public class Tower<KVER extends Comparable<KVER>,K extends Comparable<K>,V exten
 	}
 
 	public boolean isHeadTower() throws Exception {
-		return this.towerType == Tower.TowerType.Head;
+		return this.towerType == Tower.TowerType.HEAD;
 	}
 
 	@Override
