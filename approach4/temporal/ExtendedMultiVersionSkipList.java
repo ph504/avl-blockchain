@@ -98,6 +98,7 @@ public class ExtendedMultiVersionSkipList
 
     public void rangeSearch4(VersionType verStart, VersionType verEnd, ArrayList<IRowDetails<KeyType,BucketRowType,VersionType>> rows) throws Exception {
         Utils.assertTrue(verStart.compareTo(verEnd) <= 0, "should be true");
+
         Set<KeyType> keys = this.versionsToKeysIndex.getKeys(verStart, verEnd);
         for (KeyType key : keys) {
             this.toweredSkipList.rangeSearch2(verStart, verEnd, key, rows);
