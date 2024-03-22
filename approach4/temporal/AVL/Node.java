@@ -67,7 +67,7 @@ public class Node<KVER extends Comparable<KVER>,K extends Comparable<K>, V exten
 //        return new ToweredTypeUtils<>(integerClassUtils, tableRowIntDateColsClassUtils);
 //    }
 
-    public static <KVER extends Comparable<KVER>,K extends Comparable<K>,V extends IRowDetails<K,V,KVER>> void main(String[] args) {
+    public static void main(String[] args) throws Exception{
 
         int patientIDsSize = 2;
         int patientIDsPerDayCount = 2;
@@ -120,8 +120,16 @@ public class Node<KVER extends Comparable<KVER>,K extends Comparable<K>, V exten
         for (TableRowIntDateCols row: data_) {
             System.out.println(row.col1 + ", " + row.col2);
             //int key = row.getKey();
-            Node<KVER,K,V> tower = new Node<>(row.col2, row, 1);
+            Node<Date,Integer,TableRowIntDateCols> node = new Node(row.col2, row, 1);
+            System.out.println(node);
         }
 
+    }
+
+    @Override
+    public String toString() {
+        return "leftChild: " + leftChild + ", rightChild: " + rightChild + ", parent: " + parent +
+                ", height: " + height + ", digest: " + Arrays.toString(digest) + ", key: " + key +
+                ", value: " + value + ", partitionCapacity: " + partitionCapacity;
     }
 }

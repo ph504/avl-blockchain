@@ -489,4 +489,14 @@ public class Partitions<K extends Comparable<K>, T extends IRowDetails<K,T,V> , 
         }
         return rows;
     }
+
+    @Override
+    public String toString() {
+        return "Partitions{" +
+                "partitions=" + partitions +
+                ", lastPartition=" + lastPartition +
+                ", partitionCapacity=" + partitionCapacity +
+                ", elemCount=" + elemCount +
+                '}';
+    }
 }
