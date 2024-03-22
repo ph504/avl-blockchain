@@ -91,5 +91,11 @@ public class Version<KVER extends  Comparable<KVER>> implements Comparable<Versi
         }
     }
 
-
+    @Override
+    public String toString() {
+        return "Version{" +
+                "validFrom=" + validFrom +
+                ", validTo=" + validTo +
+                '}';
+    }
 }

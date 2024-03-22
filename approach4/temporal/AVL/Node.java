@@ -128,8 +128,9 @@ public class Node<KVER extends Comparable<KVER>,K extends Comparable<K>, V exten
 
     @Override
     public String toString() {
+
         return "leftChild: " + leftChild + ", rightChild: " + rightChild + ", parent: " + parent +
                 ", height: " + height + ", digest: " + Arrays.toString(digest) + ", key: " + key +
-                ", value: " + value + ", partitionCapacity: " + partitionCapacity;
+                ", value: " + value + ", partitionCapacity.: " + partitionCapacity;
     }
 }

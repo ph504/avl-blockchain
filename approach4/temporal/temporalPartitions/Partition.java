@@ -4,6 +4,8 @@ import approach4.IRowDetails;
 import approach4.Utils;
 import approach4.valueDataStructures.Version;
 
+import java.util.Arrays;
+
 
 public class Partition<K extends Comparable<K>, T extends IRowDetails<K,T,V> , V extends Comparable<V>>  {
 
@@ -187,6 +189,11 @@ public class Partition<K extends Comparable<K>, T extends IRowDetails<K,T,V> , V
         }
         T lastRow = this.partition[this.size - 1];
         return lastRow.getVersion();
+    }
+
+    @Override
+    public String toString() {
+        return Arrays.toString(partition);
     }
 }
 

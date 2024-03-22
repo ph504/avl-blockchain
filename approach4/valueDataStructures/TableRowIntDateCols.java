@@ -4,6 +4,7 @@ import approach4.IRowDetails;
 import approach4.ITypeUtils;
 import approach4.Utils;
 
+import java.util.Arrays;
 import java.util.Date;
 
 /**
@@ -75,5 +76,12 @@ public class TableRowIntDateCols implements IRowDetails<Integer, TableRowIntDate
         return this;
     }
 
-
+    @Override
+    public String toString() {
+        return  "version=" + version +
+                ", digest=" + Arrays.toString(digest) +
+                ", col1=" + col1 +
+                ", col2=" + col2 +
+                ", tableRowOneIntColClassUtils=" + tableRowOneIntColClassUtils;
+    }
 }
