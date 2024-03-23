@@ -42,7 +42,7 @@ public class Node<KVER extends Comparable<KVER>,K extends Comparable<K>, V exten
             value.add(version, row);
         }
 
-        digest = null;
+        digest = Utils.nullDigest;
         leftChild = null;
         rightChild = null;
         parent = null;
@@ -59,19 +59,46 @@ public class Node<KVER extends Comparable<KVER>,K extends Comparable<K>, V exten
         return list;
     }
 
-//    // TODO: Remove
-//    private static ToweredTypeUtils<Integer, TableRowIntDateCols> getTableIntDateColsIndexTypeUtils() {
-//        ITypeUtils<Integer> integerClassUtils = new IntegerClassUtils();
-//        ITypeUtils<TableRowIntDateCols> tableRowIntDateColsClassUtils = new TableRowIntDateColsClassUtils();
-//
-//        return new ToweredTypeUtils<>(integerClassUtils, tableRowIntDateColsClassUtils);
-//    }
+
+    public void processDigest(ToweredTypeUtils<K,V> toweredTypeUtils) throws Exception {
+        this.digest = getNodeDigest(this, toweredTypeUtils);
+        for (byte b : this.digest) {
+            System.out.printf("%02X ", b);
+        }
+    }
+
+
+    public static <KVER extends Comparable<KVER>,K extends Comparable<K>,V extends IRowDetails<K, V, KVER>>
+    byte[] getKeyValueDigest(K curNodeKey, Partitions<K,V,KVER> curNodeValue, ToweredTypeUtils<K,V> toweredTypeUtils) throws Exception {
+        byte[] curTowerKeyDigest = Utils.getNullableObjectHash(curNodeKey, toweredTypeUtils.kTypeUtils);
+        byte[] curTowerValueDigest = curNodeValue.getRootDigest();
+        return Utils.getHash(curTowerKeyDigest, curTowerValueDigest);
+    }
+
+    public static <KVER extends Comparable<KVER>,K extends Comparable<K>,V extends IRowDetails<K,V, KVER>>
+    byte[] getNodeDigest(Node<KVER,K,V> node, ToweredTypeUtils<K,V> toweredTypeUtils) throws Exception {
+        byte[] curNodeDigest = getKeyValueDigest(node.key, node.value, toweredTypeUtils);
+
+        byte[] leftChild_digest = Utils.nullDigest;
+        byte[] rightChild_digest = Utils.nullDigest;
+
+        if (node.leftChild != null) {
+            System.out.println("L child digest is not null");
+            leftChild_digest = node.leftChild.digest;
+        }
+        if (node.rightChild != null) {
+            System.out.println("R child digest is not null");
+            rightChild_digest = node.rightChild.digest;
+        }
+        byte[] children_digest = Utils.getHash(leftChild_digest, rightChild_digest);
+        return Utils.getHash(curNodeDigest, children_digest);
+    }
 
     public static void main(String[] args) throws Exception{
 
         int patientIDsSize = 2;
-        int patientIDsPerDayCount = 2;
-        int datesCount = 10;
+        int patientIDsPerDayCount = 1;
+        int datesCount = 2;
         int firstPatientID = 100;
 
         LocalDate startLocalDate = LocalDate.of(2024, Month.MARCH, 10);
@@ -108,6 +135,8 @@ public class Node<KVER extends Comparable<KVER>,K extends Comparable<K>, V exten
         ITypeUtils<Integer> integerClassUtils = new IntegerClassUtils();
         ITypeUtils<TableRowIntDateCols> tableRowIntDateColsClassUtils = new TableRowIntDateColsClassUtils();
         ToweredTypeUtils<Integer, TableRowIntDateCols> tableIntDateColsIndexTypeUtils = new ToweredTypeUtils<>(integerClassUtils, tableRowIntDateColsClassUtils);
+        ToweredTypeUtils<Integer, TableRowIntDateCols> toweredTypeUtils = new ToweredTypeUtils<>(integerClassUtils, tableRowIntDateColsClassUtils);
+
 
         // Convert data to type data_
         List<TableRowIntDateCols> data_ = new ArrayList<>(data.size());
@@ -121,7 +150,8 @@ public class Node<KVER extends Comparable<KVER>,K extends Comparable<K>, V exten
             System.out.println(row.col1 + ", " + row.col2);
             //int key = row.getKey();
             Node<Date,Integer,TableRowIntDateCols> node = new Node(row.col2, row, 1);
-            System.out.println(node);
+            node.processDigest(toweredTypeUtils);
+            // System.out.println(node);
         }
 
     }

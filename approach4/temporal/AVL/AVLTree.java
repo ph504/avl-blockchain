@@ -14,8 +14,6 @@ import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
-// digest=[-44, -23, -59, 84, 79, -45, -57, -108, 0, -70, 69, -110, -97, 29, 10, 9, 55, 78, 6, -120, -82, 98, -56, -80, -81, -77, 67, 108, 121, 23, 87, -15] ?
-
 public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends Comparable<KeyType>,BucketRowType extends IRowDetails<KeyType,BucketRowType,VersionType>> {
     private final int partitionCapacity;
     private VersionType currentVersion;
@@ -59,6 +57,8 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
                 currentNode.leftChild = new Node<VersionType, KeyType, BucketRowType>(this.currentVersion, row, this.partitionCapacity);
                 // set parent
                 currentNode.leftChild.parent = currentNode;
+                // Initialize the digest for the inserted node
+                currentNode.leftChild.processDigest(this.toweredTypeUtils);
                  _inspectInsertion(currentNode.leftChild, new ArrayList<Node<VersionType, KeyType, BucketRowType>>());
             }
             else _insert(key, row, currentNode.leftChild);
@@ -70,6 +70,8 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
                 currentNode.rightChild = new Node<VersionType, KeyType, BucketRowType>(this.currentVersion, row, this.partitionCapacity);
                 // set parent
                 currentNode.rightChild.parent = currentNode;
+                // Initialize the digest for the inserted node
+                currentNode.rightChild.processDigest(this.toweredTypeUtils);
                 _inspectInsertion(currentNode.rightChild, new ArrayList<Node<VersionType, KeyType, BucketRowType>>());
             }
             else _insert(key, row, currentNode.rightChild);
@@ -153,7 +155,10 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
         z.height = 1 + Math.max(getHeight(z.leftChild), getHeight(z.rightChild));
         y.height = 1 + Math.max(getHeight(y.leftChild), getHeight(y.rightChild));
 
-         System.out.println("Right Rotation");
+        // Update the digests of z and y (Since z is the child of y, we first update z)
+        z.processDigest(this.toweredTypeUtils);
+        y.processDigest(this.toweredTypeUtils);
+        System.out.println("Right Rotation");
     }
 
     private void _leftRotate(Node<VersionType, KeyType, BucketRowType> z) throws Exception {
@@ -183,6 +188,10 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
 
         z.height = 1 + Math.max(getHeight(z.leftChild), getHeight(z.rightChild));
         y.height = 1 + Math.max(getHeight(y.leftChild), getHeight(y.rightChild));
+
+        // Update the digests of z and y (Since z is the child of y, we first update z)
+        z.processDigest(this.toweredTypeUtils);
+        y.processDigest(this.toweredTypeUtils);
 
          System.out.println("Left Rotation");
     }
@@ -269,11 +278,6 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
         for (TableRowIntDateCols row: data_) {
             System.out.println(row.col1 + ", " + row.col2);
         }
-//
-//        for (Date ver: versions) {
-//            System.out.println(ver);
-//        }
-
 
         for (TableRowIntDateCols row: data_) {
             System.out.println("Inserting: " + row.col1);
