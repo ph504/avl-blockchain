@@ -197,9 +197,9 @@ public class Main {
     }
 
     /*
-       As the B-tree is browsed, each key is compared with the previously encountered key (elem) to ensure it is strictly greater, 
+       As the B-tree is browsed, each key is compared with the previously encountered key (elem) to ensure it is strictly greater,
        adhering to the expected sorted order of keys in a B-tree. This process validates the integrity and correctness of the B-tree's sorting mechanism.
-    */ 
+    */
     private static boolean btree1() throws IOException, KeyNotFoundException {
         BTree<Long, String> btree = BTreeFactory.createInMemoryBTree( "test", LongSerializer.INSTANCE, StringSerializer.INSTANCE );
         btree.setPageSize(32);
@@ -494,6 +494,8 @@ public class Main {
     }
 
     private static ToweredTypeUtils<Integer, TableRowIntDateCols> getTableIntDateColsIndexTypeUtils() {
+        // all this could be given in where it's needed, do we need the same object to pass on over and over again?
+        // @see
         ITypeUtils<Integer> integerClassUtils = new IntegerClassUtils();
         ITypeUtils<TableRowIntDateCols> tableRowIntDateColsClassUtils = new TableRowIntDateColsClassUtils();
 
@@ -862,7 +864,11 @@ public class Main {
 
         settings.put("runsCount", runs);
         settings.put("MBTCapacity", 10000); // This? 
-        settings.put("temporalIndexCapacity", 20); // This? 
+        settings.put("temporalIndexCapacity", 20); // This?
+        // the fact that this is set here not in config is shaabaash.
+        // imagine :D
+        // the fact that we didn't separate the scenarios and coded for more than 2k lines of code is shaabaash too.
+
 
         boolean isFirstBatch = true;
         for (Integer itemsCount: itemsCounts) {
@@ -1010,14 +1016,49 @@ public class Main {
 //            Map<String, Object> merkleBucketIndexRunRes = SearchMVScenarios("merkleBucketTreeIndex", index, data_, percent);
 //            writeScenarioResultsToFile(pathMerkleBucketScenario, merkleBucketIndexRunRes);
 
-            // Where is this coming from? 
+            // WDYM temporal capacity
             ToweredSkipList.MAX_LEVEL = temporalIndexCapacity;
+
+            // instantiate the DS that maps version nodes in an avl tree to bitmaps of keys
+            // inputs to constructor: initversion=firstversion and keyscapacity=data.size()
             IVersionsToKeysIndex<Date, Integer> versionsToKeysIndex = new VersionsToKeysIndex<>(firstVersion, data.size());
-            index = new SkipListMVIntDateWrapper(firstVersion, iterationProbability, versionsToKeysIndex, partitionCapacity, tableIntDateColsIndexTypeUtils);
-            Map<String, Object> skipListIndexRunRes = SearchMVScenarios("tableStrIntColsSkipListIndex", index, data_, percent);
+
+            // idk why we wrapped but okay ig?
+            // XMVSL
+            // <
+            //  KVER extends Comparable<KVER>,
+            //  K extends Comparable<K>,
+            //  V extends IRowDetails<K,V,KVER>
+            // the naming convention is... we could use V for version and R for rows?
+            // >
+            index = new SkipListMVIntDateWrapper(
+                    // Type KVER
+                    firstVersion,
+
+                    // the probability to build a new level
+                    // iterationProbability=0.5 here
+                    iterationProbability,
+
+                    // the DS for mapping
+                    versionsToKeysIndex,
+
+                    // partitionCapacity=0 here.
+                    partitionCapacity,
+
+                    // used solely for the int part I think that relates to digest
+                    // don't understand the bucket row part tho, where it's used is kinda vague and why it's there is kinda vague too.
+                    tableIntDateColsIndexTypeUtils);
+
+            Map<String, Object> skipListIndexRunRes =
+                    SearchMVScenarios(
+                    "tableStrIntColsSkipListIndex",
+                    index,
+                    data_,
+                    percent);
             writeScenarioResultsToFile(pathTempSkipListScenario, skipListIndexRunRes);
 
             // AVL Index Code
+//            index = new XAVLTree();
 
             index = new PHTreeIntDateWrapper();
             Map<String, Object> phTreeIndexRunRes = SearchMVScenarios("phTreeIndex", index, data_, percent);

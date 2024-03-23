@@ -22,25 +22,25 @@ public class Tower<KVER extends Comparable<KVER>,K extends Comparable<K>,V exten
 
 
 	public enum TowerType {
-		Head,
-		Regular
+		HEAD,
+		REGULAR
 	}
 
 	public Tower(KVER version, V row, int maxLevel, int partitionCapacity) throws Exception {
-		this(TowerType.Regular, version, row, maxLevel, partitionCapacity);
+		this(TowerType.REGULAR, version, row, maxLevel, partitionCapacity);
 	}
 
 	public Tower(TowerType towerType, KVER version, V row, int maxLevel, int partitionCapacity) throws Exception {
 //		checkIsValidLevelSize(maxLevel);
 		K key = null;
-		if (towerType == TowerType.Regular) {
+		if (towerType == TowerType.REGULAR) {
 			key = row.getKey();
 		}
 //		K key = null;
 //		if (towerType == TowerType.Head) {
 //			Utils.assertNull(row, "row must be null in head node");
 //		}
-//		else if (towerType == TowerType.Regular) {
+//		else if (towerType == TowerType.REGULAR) {
 //			Utils.assertNotNull(row, "row can't be null in non head node");
 //			key = row.getKey();
 //		} else {
@@ -186,6 +186,7 @@ public class Tower<KVER extends Comparable<KVER>,K extends Comparable<K>,V exten
 		}
 	}
 
+	// dirty code
 	private void checkLevelInRange(int level) throws Exception {
 		checkLevelInRange(this, level);
 	}
@@ -197,14 +198,16 @@ public class Tower<KVER extends Comparable<KVER>,K extends Comparable<K>,V exten
 		}
 	}
 
+	// dirty code
 	private static void checkIsValidLevelSize(int level) throws Exception {
 		if (level > ToweredSkipList.MAX_LEVEL || level < 0) {
 			throw new Exception("invalid level");
 		}
 	}
 
+	// dirty code
 	public boolean isHeadTower() throws Exception {
-		return this.towerType == Tower.TowerType.Head;
+		return this.towerType == Tower.TowerType.HEAD;
 	}
 
 	@Override

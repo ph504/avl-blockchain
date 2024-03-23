@@ -7,10 +7,8 @@ import approach4.Utils;
 public class TableRowStrIntCols implements IRowDetails<String, TableRowStrIntCols, Integer> {
     private Version<Integer> version;
     private byte[] digest;
-
     public final String col1;
     public final int col2;
-
     private final ITypeUtils<TableRowStrIntCols> tableRowOneStrColClassUtils;
 
 

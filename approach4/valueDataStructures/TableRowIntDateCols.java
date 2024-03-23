@@ -6,13 +6,20 @@ import approach4.Utils;
 
 import java.util.Date;
 
+/**
+ * This seems an encapsulation of the {Bucket DS row} together with {version and digests}.
+ * however the tableRowOneIntColClassUtils doesn't make any sense because it doesn't have any properties of the table row
+ * seems that it just wanted to use the col1 and col2 of that DS.
+ */
 public class TableRowIntDateCols implements IRowDetails<Integer, TableRowIntDateCols, Date> {
     private Version<Date> version;
     private byte[] digest;
 
+    // the key i think
     public final int col1;
     public final Date col2;
 
+    // if you found out what this class/object does let me know. IHNFI
     private final ITypeUtils<TableRowIntDateCols> tableRowOneIntColClassUtils;
 
 

@@ -11,12 +11,39 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * TODO: remove this whole class, is garbage and serves no purpose other than wasting memory and energy to read clean code
+ */
 public class SkipListMVIntDateWrapper implements IIndexMVIntDate {
 
+    /**
+     * KVER=Date
+     * K=INT
+     * V=Bucket row (TableRowIntDateCols)
+     */
     private ExtendedMultiVersionSkipList<Date, Integer, TableRowIntDateCols> index = null;
 
-    public SkipListMVIntDateWrapper(Date initVersion, double iterationProbability, IVersionsToKeysIndex<Date,Integer> versionsToKeysIndex, int partitionCapacity, ToweredTypeUtils<Integer, TableRowIntDateCols> toweredTypeUtils) throws Exception {
-        this.index = new ExtendedMultiVersionSkipList<>(initVersion, iterationProbability, versionsToKeysIndex, partitionCapacity, toweredTypeUtils);
+    /**
+     * constructor
+     * @param initVersion
+     * @param iterationProbability
+     * @param versionsToKeysIndex
+     * @param partitionCapacity
+     * @param toweredTypeUtils
+     * @throws Exception
+     */
+    public SkipListMVIntDateWrapper(Date initVersion,
+                                    double iterationProbability,
+                                    IVersionsToKeysIndex<Date,Integer> versionsToKeysIndex,
+                                    int partitionCapacity, ToweredTypeUtils<Integer,
+                                    TableRowIntDateCols> toweredTypeUtils)
+            throws Exception {
+        this.index = new ExtendedMultiVersionSkipList<>(
+                initVersion,
+                iterationProbability,
+                versionsToKeysIndex,
+                partitionCapacity,
+                toweredTypeUtils);
     }
 
     @Override

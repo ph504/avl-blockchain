@@ -10,8 +10,11 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Random;
 
+/**
+* handles digest mostly*/
 public class Utils {
 
     public final static String HASH_DEFAULT = "SHA-256";
@@ -137,16 +140,23 @@ public class Utils {
 
 
 
-    public static <KVER extends Comparable<KVER>> void checkVersions(KVER currentVersion, KVER nextVersion) throws Exception {
+    public static <VersionType extends Comparable<VersionType>> void checkVersions(VersionType currentVersion, VersionType nextVersion) throws Exception {
         Utils.assertNotNull(nextVersion, "nextVersion can't be null");
         Utils.assertNotNull(currentVersion, "currentVersion can't be null");
         Utils.assertTrue(nextVersion.compareTo(currentVersion) >= 0, "next version must be larger or equal than current version");
     }
 
-    public static <KVER extends Comparable<KVER>> void checkVersion(KVER version) throws Exception {
+    public static <VersionType extends Comparable<VersionType>> void checkVersion(VersionType version) throws Exception {
         Utils.assertNotNull(version, "version can't be null");
     }
 
+    /**
+     * to construct the level with a probability(iterationprobability ig)
+     * @param maxLevel
+     * @param random
+     * @param iterationProbability
+     * @return
+     */
     public static int getRandomLevel(int maxLevel, Random random, double iterationProbability) {
         int level = 0;
         while (level < maxLevel && random.nextDouble() < iterationProbability) {
@@ -210,18 +220,13 @@ public class Utils {
         return null;
     }
 
-    public static <KVER extends Comparable<KVER>> void checkVersion(KVER currentVersion, KVER nextVersion) throws Exception {
+    public static <VersionType extends Comparable<VersionType>> void checkVersion(VersionType currentVersion, VersionType nextVersion) throws Exception {
         assertTrue(nextVersion.compareTo(currentVersion) >= 0, "next version must be equal or larger than current version");
     }
 
     public static <K extends Comparable<K>> void checkStrictlyAscending(K smaller, K bigger) throws Exception {
         assertTrue(bigger.compareTo(smaller) > 0, "should be true");
     }
-
-
-
-
-
 }
 
 
