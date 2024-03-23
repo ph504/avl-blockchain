@@ -14,6 +14,8 @@ import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
+// digest=[-44, -23, -59, 84, 79, -45, -57, -108, 0, -70, 69, -110, -97, 29, 10, 9, 55, 78, 6, -120, -82, 98, -56, -80, -81, -77, 67, 108, 121, 23, 87, -15] ?
+
 public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends Comparable<KeyType>,BucketRowType extends IRowDetails<KeyType,BucketRowType,VersionType>> {
     private final int partitionCapacity;
     private VersionType currentVersion;
@@ -24,14 +26,6 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
 
     private final ToweredTypeUtils<KeyType,BucketRowType> toweredTypeUtils;
 
-
-    //    private VersionType currentVersion;
-//    public AVLTree(VersionType initVersion, int partitionCapacity) throws Exception {
-//        this.currentVersion = initVersion;
-//        this.partitionCapacity = partitionCapacity;
-//        // this.head = new Node<>(initVersion, null, this.partitionCapacity);
-//        this.head = null;
-//    }
 
     // TODO add versioning
     // note for versioning: we don't have to add this toweredtypeutils we can call whenever we want to add it with the digest calls.
@@ -51,34 +45,32 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
         if (this.head == null) {
             this.head = new Node<>(this.currentVersion, row, this.partitionCapacity);
         } else {
-            _insert(key, row, head);
+            _insert(key, row, this.head);
         }
     }
 
     private void _insert(KeyType key,
                        BucketRowType row, 
                        Node<VersionType, KeyType, BucketRowType> currentNode) throws Exception{
-        //head should never be null tho?
-//        if (head==null)
-//                throw new Exception("head should not be null");
         if (key.compareTo(currentNode.key)<0)
             if (currentNode.leftChild == null){
-                currentNode.leftChild =
-                        new Node<VersionType, KeyType, BucketRowType>(this.currentVersion, row, this.partitionCapacity);
-                
+                System.out.println("Adding " + key + " as a left child of " + currentNode.key);
+                // set as left child
+                currentNode.leftChild = new Node<VersionType, KeyType, BucketRowType>(this.currentVersion, row, this.partitionCapacity);
                 // set parent
                 currentNode.leftChild.parent = currentNode;
-                _inspectInsertion(currentNode.leftChild, new ArrayList<>());
+                 _inspectInsertion(currentNode.leftChild, new ArrayList<Node<VersionType, KeyType, BucketRowType>>());
             }
             else _insert(key, row, currentNode.leftChild);
         
         else if (key.compareTo(currentNode.key)>0)
             if (currentNode.rightChild == null) {
-                currentNode.rightChild =
-                        new Node<VersionType, KeyType, BucketRowType>(this.currentVersion, row, this.partitionCapacity);
+                System.out.println("Adding " + key + " as a right child of " + currentNode.key);
+                // set as right child
+                currentNode.rightChild = new Node<VersionType, KeyType, BucketRowType>(this.currentVersion, row, this.partitionCapacity);
                 // set parent
                 currentNode.rightChild.parent = currentNode;
-                _inspectInsertion(currentNode.rightChild, new ArrayList<>());
+                _inspectInsertion(currentNode.rightChild, new ArrayList<Node<VersionType, KeyType, BucketRowType>>());
             }
             else _insert(key, row, currentNode.rightChild);
 
@@ -134,6 +126,7 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
     }
 
     private void _rightRotate(Node<VersionType, KeyType, BucketRowType> z) throws Exception {
+        Node<VersionType, KeyType, BucketRowType> subroot = z.parent;
         Node<VersionType, KeyType, BucketRowType> y = z.leftChild;
         Node<VersionType, KeyType, BucketRowType> t3 = y.rightChild;
 
@@ -145,7 +138,8 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
             t3.parent = z;
         }
 
-        y.parent = z.parent;
+        y.parent = subroot;
+
         if (y.parent == null) {
             this.head = y;
         } else {
@@ -163,6 +157,7 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
     }
 
     private void _leftRotate(Node<VersionType, KeyType, BucketRowType> z) throws Exception {
+        Node<VersionType, KeyType, BucketRowType> subroot = z.parent;
         Node<VersionType, KeyType, BucketRowType> y = z.rightChild;
         Node<VersionType, KeyType, BucketRowType> t2 = y.leftChild;
 
@@ -174,7 +169,8 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
             t2.parent = z;
         }
 
-        y.parent = z.parent;
+        y.parent = subroot;
+
         if (y.parent == null) {
             this.head = y;
         } else {
@@ -219,10 +215,10 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
         // create a tree with nodes, see if the insert and all operations works as intended
         System.out.println();
 
-        int patientIDsSize = 5;
-        int patientIDsPerDayCount = 5;
+        int patientIDsSize = 6;
+        int patientIDsPerDayCount = 6;
         int datesCount = 1;
-        int firstPatientID = 100;
+        int firstPatientID = 1;
 
         LocalDate startLocalDate = LocalDate.of(2024, Month.MARCH, 10);
         LocalDate currentLocalDate = startLocalDate;
@@ -241,7 +237,7 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
         // Generate data
         ArrayList<TupleTwo<Integer, Date>> data = new ArrayList<>();
         for (Date date : sequentialDates) {
-            Collections.shuffle(patientIDs);
+            // Collections.shuffle(patientIDs);
             for (int i=0; i<patientIDsPerDayCount; i++) {
                 data.add(new TupleTwo<>(patientIDs.get(i), date));
             }
@@ -273,19 +269,21 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
         for (TableRowIntDateCols row: data_) {
             System.out.println(row.col1 + ", " + row.col2);
         }
-
-        for (Date ver: versions) {
-            System.out.println(ver);
-        }
+//
+//        for (Date ver: versions) {
+//            System.out.println(ver);
+//        }
 
 
         for (TableRowIntDateCols row: data_) {
-            System.out.println("Inserting: " + row.col1 + ", " + row.col2);
+            System.out.println("Inserting: " + row.col1);
             if (!currentVersion.equals(row.col2)) {
                 currentVersion = row.col2;
                 index.commitCurrentVersion(currentVersion);
             }
             index.insert(row);
+            System.out.println("-------------");
+            System.out.println("Current Root: " + index.head.key);
         }
     }
 }
