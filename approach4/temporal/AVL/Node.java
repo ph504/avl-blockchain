@@ -2,7 +2,6 @@ package approach4.temporal.AVL;
 import approach4.IRowDetails;
 import approach4.ITypeUtils;
 import approach4.TupleTwo;
-import approach4.temporal.skipList.Tower;
 import approach4.temporal.skipList.ToweredTypeUtils;
 import approach4.temporal.temporalPartitions.Partitions;
 import approach4.Utils;
@@ -62,9 +61,11 @@ public class Node<KVER extends Comparable<KVER>,K extends Comparable<K>, V exten
 
     public void processDigest(ToweredTypeUtils<K,V> toweredTypeUtils) throws Exception {
         this.digest = getNodeDigest(this, toweredTypeUtils);
+        System.out.println("Processing digest of node: " + this.key);
         for (byte b : this.digest) {
             System.out.printf("%02X ", b);
         }
+        System.out.println();
     }
 
 
@@ -83,11 +84,9 @@ public class Node<KVER extends Comparable<KVER>,K extends Comparable<K>, V exten
         byte[] rightChild_digest = Utils.nullDigest;
 
         if (node.leftChild != null) {
-            System.out.println("L child digest is not null");
             leftChild_digest = node.leftChild.digest;
         }
         if (node.rightChild != null) {
-            System.out.println("R child digest is not null");
             rightChild_digest = node.rightChild.digest;
         }
         byte[] children_digest = Utils.getHash(leftChild_digest, rightChild_digest);
@@ -158,7 +157,6 @@ public class Node<KVER extends Comparable<KVER>,K extends Comparable<K>, V exten
 
     @Override
     public String toString() {
-
         return "leftChild: " + leftChild + ", rightChild: " + rightChild + ", parent: " + parent +
                 ", height: " + height + ", digest: " + Arrays.toString(digest) + ", key: " + key +
                 ", value: " + value + ", partitionCapacity.: " + partitionCapacity;

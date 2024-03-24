@@ -19,14 +19,12 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
     private VersionType currentVersion;
     //    private final double iterationProbability;
 
-    // TODO: Should head be final?
      private Node<VersionType,KeyType,BucketRowType> head;
 
     private final ToweredTypeUtils<KeyType,BucketRowType> toweredTypeUtils;
 
 
     // TODO add versioning
-    // note for versioning: we don't have to add this toweredtypeutils we can call whenever we want to add it with the digest calls.
     public AVLTree(
                 VersionType initVersion,
                 int partitionCapacity,
@@ -52,7 +50,6 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
                        Node<VersionType, KeyType, BucketRowType> currentNode) throws Exception{
         if (key.compareTo(currentNode.key)<0)
             if (currentNode.leftChild == null){
-                System.out.println("Adding " + key + " as a left child of " + currentNode.key);
                 // set as left child
                 currentNode.leftChild = new Node<VersionType, KeyType, BucketRowType>(this.currentVersion, row, this.partitionCapacity);
                 // set parent
@@ -65,7 +62,6 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
         
         else if (key.compareTo(currentNode.key)>0)
             if (currentNode.rightChild == null) {
-                System.out.println("Adding " + key + " as a right child of " + currentNode.key);
                 // set as right child
                 currentNode.rightChild = new Node<VersionType, KeyType, BucketRowType>(this.currentVersion, row, this.partitionCapacity);
                 // set parent
@@ -93,7 +89,16 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
 
         if (Math.abs(leftHeight - rightHeight) > 1) {
             path.add(0, curNode.parent);
-            _rebalanceNode(path.get(0), path.get(1), path.get(2));
+            System.out.println("Rebalancing starting at node " + curNode.parent.key);
+            Node<VersionType, KeyType, BucketRowType> rebalanced_root = _rebalanceNode(path.get(0), path.get(1), path.get(2));
+
+            System.out.println("Rebalanced root at " + rebalanced_root.key);
+
+            // Update digests from the rebalanced root up, then exit the function
+            while (rebalanced_root.parent != null) {
+                rebalanced_root.parent.processDigest(this.toweredTypeUtils);
+                rebalanced_root = rebalanced_root.parent;
+            }
             return;
         }
 
@@ -103,10 +108,14 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
             curNode.parent.height = newHeight;
         }
 
+        // # Update the parent's digest as no re-balancing was required
+        System.out.println("Updating my parent's digest");
+        curNode.parent.processDigest(this.toweredTypeUtils);
+
         _inspectInsertion(curNode.parent, path);
     }
 
-    private void _rebalanceNode(Node<VersionType, KeyType, BucketRowType> z,
+    private Node<VersionType, KeyType, BucketRowType> _rebalanceNode(Node<VersionType, KeyType, BucketRowType> z,
                                 Node<VersionType, KeyType, BucketRowType> y,
                                 Node<VersionType, KeyType, BucketRowType> x) throws Exception {
         //  z => The unbalanced node
@@ -114,14 +123,18 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
         //  x => The child of y
         if (y == z.leftChild && x == y.leftChild) {
             _rightRotate(z);
+            return y;
         } else if (y == z.leftChild && x == y.rightChild) {
             _leftRotate(y);
             _rightRotate(z);
+            return x;
         } else if (y == z.rightChild && x == y.rightChild) {
             _leftRotate(z);
+            return y;
         } else if (y == z.rightChild && x == y.leftChild) {
             _rightRotate(y);
             _leftRotate(z);
+            return x;
         } else {
             throw new Exception("z,y,x node configuration not recognized!");
         }
@@ -158,7 +171,6 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
         // Update the digests of z and y (Since z is the child of y, we first update z)
         z.processDigest(this.toweredTypeUtils);
         y.processDigest(this.toweredTypeUtils);
-        System.out.println("Right Rotation");
     }
 
     private void _leftRotate(Node<VersionType, KeyType, BucketRowType> z) throws Exception {
@@ -192,8 +204,6 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
         // Update the digests of z and y (Since z is the child of y, we first update z)
         z.processDigest(this.toweredTypeUtils);
         y.processDigest(this.toweredTypeUtils);
-
-         System.out.println("Left Rotation");
     }
 
     // Height helper
@@ -208,6 +218,79 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
         System.out.println("Current version: " + this.currentVersion);
     }
 
+    @Override
+    public String toString() {
+        if (this.head == null) {
+            return "";
+        }
+
+        StringBuilder content = new StringBuilder("\n"); // To hold the final string
+        List<Node<VersionType, KeyType, BucketRowType>> curNodes = new ArrayList<>(); // All nodes at the current level
+        curNodes.add(this.head);
+        int curHeight = this.head.height; // Height of nodes at the current level
+        String sep = " ".repeat(Math.max(0, (int) Math.pow(2, curHeight - 1))); // Variable sized separator between elements
+
+        while (true) {
+            curHeight--;
+            if (curNodes.isEmpty()) {
+                break;
+            }
+
+            StringBuilder curRow = new StringBuilder(" ");
+            StringBuilder nextRow = new StringBuilder("");
+            List<Node<VersionType, KeyType, BucketRowType>> nextNodes = new ArrayList<>();
+
+            boolean allNulls = curNodes.stream().allMatch(Objects::isNull);
+            if (allNulls) {
+                break;
+            }
+
+            for (Node<VersionType, KeyType, BucketRowType> n : curNodes) {
+                if (n == null) {
+                    curRow.append("   ").append(sep);
+                    nextRow.append("   ").append(sep);
+                    nextNodes.add(null);
+                    nextNodes.add(null);
+                    continue;
+                }
+
+                if (n.key != null) {
+                    String buf = " ".repeat(Math.max(0, (5 - String.valueOf(n.key).length()) / 2));
+                    curRow.append(buf).append(n.key).append(buf).append(sep);
+                } else {
+                    curRow.append(" ".repeat(5)).append(sep);
+                }
+
+                if (n.leftChild != null) {
+                    nextNodes.add(n.leftChild);
+                    nextRow.append(" /").append(sep);
+                } else {
+                    nextRow.append("  ").append(sep);
+                    nextNodes.add(null);
+                }
+
+                if (n.rightChild != null) {
+                    nextNodes.add(n.rightChild);
+                    nextRow.append("\\ ").append(sep);
+                } else {
+                    nextRow.append("  ").append(sep);
+                    nextNodes.add(null);
+                }
+            }
+
+            content.append(" ".repeat(Math.max(0, curHeight * 3)))
+                    .append(curRow)
+                    .append("\n")
+                    .append(" ".repeat(Math.max(0, curHeight * 3)))
+                    .append(nextRow)
+                    .append("\n");
+            curNodes = nextNodes;
+            sep = " ".repeat(Math.max(0, sep.length() / 2)); // Cut separator size in half
+        }
+        return content.toString();
+    }
+
+
     // TODO: Remove
     private static ArrayList<Integer> generateSortedNumbers(int init, int step, int count) {
         ArrayList<Integer> list = new ArrayList<>();
@@ -221,11 +304,8 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
 
     // demo tests
     public static void main(String[] args) throws Exception {
-        // create a tree with nodes, see if the insert and all operations works as intended
-        System.out.println();
-
-        int patientIDsSize = 6;
-        int patientIDsPerDayCount = 6;
+        int patientIDsSize = 10;
+        int patientIDsPerDayCount = 10;
         int datesCount = 1;
         int firstPatientID = 1;
 
@@ -246,7 +326,7 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
         // Generate data
         ArrayList<TupleTwo<Integer, Date>> data = new ArrayList<>();
         for (Date date : sequentialDates) {
-            // Collections.shuffle(patientIDs);
+              Collections.shuffle(patientIDs);
             for (int i=0; i<patientIDsPerDayCount; i++) {
                 data.add(new TupleTwo<>(patientIDs.get(i), date));
             }
@@ -286,8 +366,7 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
                 index.commitCurrentVersion(currentVersion);
             }
             index.insert(row);
-            System.out.println("-------------");
-            System.out.println("Current Root: " + index.head.key);
+            System.out.println(index);
         }
     }
 }
