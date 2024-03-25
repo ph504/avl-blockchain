@@ -32,20 +32,19 @@ public class Node<KVER extends Comparable<KVER>,K extends Comparable<K>, V exten
         this(version, row, 1);
     }
     public Node(KVER version, V row, int partitionCapacity) throws Exception {
-
         this.key = row.getKey();
 
         this.partitionCapacity = partitionCapacity;
-        value = new Partitions<>(this.partitionCapacity);
+        this.value = new Partitions<>(this.partitionCapacity);
         if (row != null) {
-            value.add(version, row);
+            this.value.add(version, row);
         }
 
-        digest = Utils.nullDigest;
-        leftChild = null;
-        rightChild = null;
-        parent = null;
-        height = 1;
+        this.digest = Utils.nullDigest;
+        this.leftChild = null;
+        this.rightChild = null;
+        this.parent = null;
+        this.height = 1;
     }
 
     private static ArrayList<Integer> generateSortedNumbers(int init, int step, int count) {
@@ -61,19 +60,19 @@ public class Node<KVER extends Comparable<KVER>,K extends Comparable<K>, V exten
 
     public void processDigest(ToweredTypeUtils<K,V> toweredTypeUtils) throws Exception {
         this.digest = getNodeDigest(this, toweredTypeUtils);
-        System.out.println("Processing digest of node: " + this.key);
+        System.out.println("Digest of node: " + this.key);
         for (byte b : this.digest) {
             System.out.printf("%02X ", b);
         }
         System.out.println();
     }
 
-
     public static <KVER extends Comparable<KVER>,K extends Comparable<K>,V extends IRowDetails<K, V, KVER>>
     byte[] getKeyValueDigest(K curNodeKey, Partitions<K,V,KVER> curNodeValue, ToweredTypeUtils<K,V> toweredTypeUtils) throws Exception {
-        byte[] curTowerKeyDigest = Utils.getNullableObjectHash(curNodeKey, toweredTypeUtils.kTypeUtils);
-        byte[] curTowerValueDigest = curNodeValue.getRootDigest();
-        return Utils.getHash(curTowerKeyDigest, curTowerValueDigest);
+        // TODO: What is going on here?
+        byte[] curNodeKeyDigest = Utils.getNullableObjectHash(curNodeKey, toweredTypeUtils.kTypeUtils);
+        byte[] curNodeValueDigest = curNodeValue.getRootDigest();
+        return Utils.getHash(curNodeKeyDigest, curNodeValueDigest);
     }
 
     public static <KVER extends Comparable<KVER>,K extends Comparable<K>,V extends IRowDetails<K,V, KVER>>
@@ -95,9 +94,9 @@ public class Node<KVER extends Comparable<KVER>,K extends Comparable<K>, V exten
 
     public static void main(String[] args) throws Exception{
 
-        int patientIDsSize = 2;
-        int patientIDsPerDayCount = 1;
-        int datesCount = 2;
+        int patientIDsSize = 3;
+        int patientIDsPerDayCount = 3;
+        int datesCount = 1;
         int firstPatientID = 100;
 
         LocalDate startLocalDate = LocalDate.of(2024, Month.MARCH, 10);

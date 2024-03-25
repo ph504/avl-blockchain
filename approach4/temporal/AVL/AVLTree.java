@@ -3,10 +3,12 @@ import approach4.IRowDetails;
 import approach4.ITypeUtils;
 import approach4.TupleTwo;
 import approach4.Utils;
+import approach4.temporal.skipList.Tower;
 import approach4.temporal.skipList.ToweredTypeUtils;
 import approach4.typeUtils.IntegerClassUtils;
 import approach4.typeUtils.TableRowIntDateColsClassUtils;
 import approach4.valueDataStructures.TableRowIntDateCols;
+import approach4.valueDataStructures.Version;
 
 import java.time.LocalDate;
 import java.time.Month;
@@ -36,16 +38,18 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
         this.toweredTypeUtils = toweredTypeUtils;
     }
 
-    public void insert(BucketRowType row) throws Exception {
+    public void update_insert(BucketRowType row) throws Exception {
         KeyType key = row.getKey();
         if (this.head == null) {
             this.head = new Node<>(this.currentVersion, row, this.partitionCapacity);
+            this.head.processDigest(this.toweredTypeUtils);
         } else {
-            _insert(key, row, this.head);
+            _update_insert(key, row, this.head);
         }
     }
 
-    private void _insert(KeyType key,
+
+    private void _update_insert(KeyType key,
                        BucketRowType row, 
                        Node<VersionType, KeyType, BucketRowType> currentNode) throws Exception{
         if (key.compareTo(currentNode.key)<0)
@@ -58,7 +62,7 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
                 currentNode.leftChild.processDigest(this.toweredTypeUtils);
                  _inspectInsertion(currentNode.leftChild, new ArrayList<Node<VersionType, KeyType, BucketRowType>>());
             }
-            else _insert(key, row, currentNode.leftChild);
+            else _update_insert(key, row, currentNode.leftChild);
         
         else if (key.compareTo(currentNode.key)>0)
             if (currentNode.rightChild == null) {
@@ -70,13 +74,28 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
                 currentNode.rightChild.processDigest(this.toweredTypeUtils);
                 _inspectInsertion(currentNode.rightChild, new ArrayList<Node<VersionType, KeyType, BucketRowType>>());
             }
-            else _insert(key, row, currentNode.rightChild);
+            else _update_insert(key, row, currentNode.rightChild);
 
         else {
-            // Update node
-            System.out.println("Value already in tree!");
-        }
+            BucketRowType lastRow = currentNode.value.getLastRow();
+            Version<VersionType> lastRowVersion = lastRow.getVersion();
+            if (lastRowVersion.getValidTo() == null) {
+            //  throw new Exception("a row with the same key already exists");
+                BucketRowType updatedRow = currentNode.value.updateLastRow(this.currentVersion, row);
+            } else {
+                Utils.assertTrue(lastRowVersion.getValidFrom().compareTo(this.currentVersion)  < 0);
+                BucketRowType addedRow = currentNode.value.add(this.currentVersion, row);
+            }
 
+            // Update digest
+            currentNode.processDigest(this.toweredTypeUtils);
+
+            // Update digests from the current node to root up
+            while (currentNode.parent != null) {
+                currentNode.parent.processDigest(this.toweredTypeUtils);
+                currentNode = currentNode.parent;
+            }
+        }
     }
 
     private void _inspectInsertion(Node<VersionType, KeyType, BucketRowType> curNode,
@@ -121,6 +140,7 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
         //  z => The unbalanced node
         //  y => The child of z
         //  x => The child of y
+        // Returns the root of balanced subtree
         if (y == z.leftChild && x == y.leftChild) {
             _rightRotate(z);
             return y;
@@ -206,7 +226,6 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
         y.processDigest(this.toweredTypeUtils);
     }
 
-    // Height helper
     private int getHeight(Node<VersionType, KeyType, BucketRowType> node) throws Exception {
         if (node == null) return 0;
         return node.height;
@@ -304,8 +323,8 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
 
     // demo tests
     public static void main(String[] args) throws Exception {
-        int patientIDsSize = 10;
-        int patientIDsPerDayCount = 10;
+        int patientIDsSize = 7;
+        int patientIDsPerDayCount = 7;
         int datesCount = 1;
         int firstPatientID = 1;
 
@@ -353,20 +372,40 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
         Date firstVersion = versions.get(0);
         Date currentVersion = firstVersion;
 
-        AVLTree<Date, Integer, TableRowIntDateCols> index = new AVLTree(firstVersion, 1, tableIntDateColsIndexTypeUtils);
+        AVLTree<Date, Integer, TableRowIntDateCols> index = new AVLTree<>(firstVersion, 1, tableIntDateColsIndexTypeUtils);
 
         for (TableRowIntDateCols row: data_) {
             System.out.println(row.col1 + ", " + row.col2);
         }
 
         for (TableRowIntDateCols row: data_) {
-            System.out.println("Inserting: " + row.col1);
+            System.out.println("Inserting: " + row.col1 + " | " + row.col2);
             if (!currentVersion.equals(row.col2)) {
                 currentVersion = row.col2;
                 index.commitCurrentVersion(currentVersion);
             }
-            index.insert(row);
+            index.update_insert(row);
+
+            // Print the tree
             System.out.println(index);
+
+        }
+
+
+        int totalRowsToUpdate = (int) (data_.size() * 0.2);
+        System.out.println("Total rows to update: " + totalRowsToUpdate);
+        Collections.shuffle(data_);
+
+        // Update only the first 20% of the shuffled rows
+        for (int i = 0; i < totalRowsToUpdate; i++) {
+            TableRowIntDateCols row = data_.get(i);
+            // Update the version to a random date (in this case, a fixed sample date for demonstration)
+            LocalDate tmp = LocalDate.of(2023, Month.FEBRUARY, 28);
+            Date sampleDate = Date.from(tmp.atStartOfDay(defaultZoneId).toInstant());
+            TableRowIntDateCols updateRow = new TableRowIntDateCols(row.col1, sampleDate, tableIntDateColsIndexTypeUtils.vTypeUtils);
+
+            System.out.println("Updating: " + updateRow.col1 + " | " + updateRow.col2);
+            index.update_insert(updateRow);
         }
     }
 }
