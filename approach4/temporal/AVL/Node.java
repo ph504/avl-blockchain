@@ -22,7 +22,8 @@ public class Node<KVER extends Comparable<KVER>,K extends Comparable<K>, V exten
 
     protected byte[] digest;
 
-    public final K key;
+    // public final K key;
+    public K key;
 
     public Partitions<K,V,KVER> value;
 
@@ -60,7 +61,26 @@ public class Node<KVER extends Comparable<KVER>,K extends Comparable<K>, V exten
 
     public void processDigest(ToweredTypeUtils<K,V> toweredTypeUtils) throws Exception {
         this.digest = getNodeDigest(this, toweredTypeUtils);
-        System.out.println("Digest of node: " + this.key);
+        // System.out.println("Recalculated digest of node: " + this.key + ", lChild: " + this.leftChild.key + ", rChild: " + this.rightChild.key);
+
+        StringBuilder sb = new StringBuilder("Recalculated digest of node: ");
+        sb.append(this.key);
+
+        sb.append(", lChild: ");
+        if (this.leftChild != null) {
+            sb.append(this.leftChild.key);
+        } else {
+            sb.append("null");
+        }
+
+        sb.append(", rChild: ");
+        if (this.rightChild != null) {
+            sb.append(this.rightChild.key);
+        } else {
+            sb.append("null");
+        }
+        System.out.println(sb);
+
         for (byte b : this.digest) {
             System.out.printf("%02X ", b);
         }
@@ -147,7 +167,7 @@ public class Node<KVER extends Comparable<KVER>,K extends Comparable<K>, V exten
         for (TableRowIntDateCols row: data_) {
             System.out.println(row.col1 + ", " + row.col2);
             //int key = row.getKey();
-            Node<Date,Integer,TableRowIntDateCols> node = new Node(row.col2, row, 1);
+            Node<Date,Integer,TableRowIntDateCols> node = new Node<>(row.col2, row, 1);
             node.processDigest(toweredTypeUtils);
             // System.out.println(node);
         }

@@ -3,7 +3,6 @@ import approach4.IRowDetails;
 import approach4.ITypeUtils;
 import approach4.TupleTwo;
 import approach4.Utils;
-import approach4.temporal.skipList.Tower;
 import approach4.temporal.skipList.ToweredTypeUtils;
 import approach4.typeUtils.IntegerClassUtils;
 import approach4.typeUtils.TableRowIntDateColsClassUtils;
@@ -38,22 +37,37 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
         this.toweredTypeUtils = toweredTypeUtils;
     }
 
-    public void update_insert(BucketRowType row) throws Exception {
+    public Node<VersionType, KeyType, BucketRowType> _find(KeyType key,
+                                                           Node<VersionType, KeyType, BucketRowType> currentNode) throws Exception {
+        if (key.compareTo(currentNode.key) == 0) {
+            return currentNode;
+        }
+        else if (key.compareTo(currentNode.key) < 0 && currentNode.leftChild != null) {
+            return _find(key, currentNode.leftChild);
+        }
+        else if (key.compareTo(currentNode.key) > 0 && currentNode.rightChild != null) {
+            return _find(key, currentNode.rightChild);
+        }
+        return null;
+    }
+
+    public void upsert(BucketRowType row) throws Exception {
         KeyType key = row.getKey();
         if (this.head == null) {
             this.head = new Node<>(this.currentVersion, row, this.partitionCapacity);
             this.head.processDigest(this.toweredTypeUtils);
         } else {
-            _update_insert(key, row, this.head);
+            _upsert(key, row, this.head);
         }
     }
 
 
-    private void _update_insert(KeyType key,
+    private void _upsert(KeyType key,
                        BucketRowType row, 
                        Node<VersionType, KeyType, BucketRowType> currentNode) throws Exception{
         if (key.compareTo(currentNode.key)<0)
             if (currentNode.leftChild == null){
+                System.out.println("Inserting");
                 // set as left child
                 currentNode.leftChild = new Node<VersionType, KeyType, BucketRowType>(this.currentVersion, row, this.partitionCapacity);
                 // set parent
@@ -62,10 +76,11 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
                 currentNode.leftChild.processDigest(this.toweredTypeUtils);
                  _inspectInsertion(currentNode.leftChild, new ArrayList<Node<VersionType, KeyType, BucketRowType>>());
             }
-            else _update_insert(key, row, currentNode.leftChild);
+            else _upsert(key, row, currentNode.leftChild);
         
         else if (key.compareTo(currentNode.key)>0)
             if (currentNode.rightChild == null) {
+                System.out.println("Inserting" );
                 // set as right child
                 currentNode.rightChild = new Node<VersionType, KeyType, BucketRowType>(this.currentVersion, row, this.partitionCapacity);
                 // set parent
@@ -74,9 +89,11 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
                 currentNode.rightChild.processDigest(this.toweredTypeUtils);
                 _inspectInsertion(currentNode.rightChild, new ArrayList<Node<VersionType, KeyType, BucketRowType>>());
             }
-            else _update_insert(key, row, currentNode.rightChild);
+            else _upsert(key, row, currentNode.rightChild);
 
         else {
+            System.out.println("Updating");
+
             BucketRowType lastRow = currentNode.value.getLastRow();
             Version<VersionType> lastRowVersion = lastRow.getVersion();
             if (lastRowVersion.getValidTo() == null) {
@@ -90,34 +107,196 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
             // Update digest
             currentNode.processDigest(this.toweredTypeUtils);
 
-            // Update digests from the current node to root up
-            while (currentNode.parent != null) {
-                currentNode.parent.processDigest(this.toweredTypeUtils);
-                currentNode = currentNode.parent;
-            }
+            // Update digests of its parents
+            _updateParentsDigests(currentNode);
         }
     }
+
+    public BucketRowType delete(KeyType key) throws Exception {
+        System.out.println("Deleting " + key);
+        if (this.head != null) {
+            Node<VersionType, KeyType, BucketRowType> nodeToDelete = _find(key, this.head);
+            if (nodeToDelete != null) {
+                BucketRowType deletedRow = nodeToDelete.value.deleteLastRow(this.currentVersion);
+                // Check if the bucket is empty (Because now the node needs to be deleted)
+                if (nodeToDelete.value.isEmpty()) {
+                    _deleteNode(nodeToDelete);
+                }
+                else {
+                    // Recompute digest of the nodeToDelete
+                    nodeToDelete.processDigest(this.toweredTypeUtils);
+
+                    // Update digests of its parents
+                    _updateParentsDigests(nodeToDelete);
+                }
+                return deletedRow;
+            }
+            return null;
+        }
+        return null;
+    }
+
+    // Update digests from nodeToDelete until the head
+    private void _updateParentsDigests(Node<VersionType, KeyType, BucketRowType> curNode) throws Exception {
+        while (curNode.parent != null) {
+            curNode.parent.processDigest(this.toweredTypeUtils);
+            curNode = curNode.parent;
+        }
+    }
+
+    private void _deleteNode(Node<VersionType, KeyType, BucketRowType> node) throws Exception {
+        // Get the parent of the node to be deleted
+        Node<VersionType, KeyType, BucketRowType> nodeParent = node.parent;
+
+        // Get the number of children of the node to be deleted
+        int nodeChildren = _numChildren(node);
+
+        if (nodeChildren == 0) { // CASE 1: No children
+            if (nodeParent != null) {
+                if (nodeParent.leftChild == node) {
+                    nodeParent.leftChild = null;
+                } else {
+                    nodeParent.rightChild = null;
+                }
+            } else {
+                this.head = null;
+            }
+        } else if (nodeChildren == 1) { // CASE 2: One child
+            // get the single child node
+            Node<VersionType, KeyType, BucketRowType> child = (node.leftChild != null) ? node.leftChild : node.rightChild;
+
+            if (nodeParent != null) {
+                if (nodeParent.leftChild == node) {
+                    nodeParent.leftChild = child;
+                } else {
+                    nodeParent.rightChild = child;
+                }
+            } else {
+                this.head = child;
+            }
+            child.parent = nodeParent;
+
+        } else { // CASE 3: Two children
+            Node<VersionType, KeyType, BucketRowType> successor = _minNode(node.rightChild);
+
+            // swapNodes(node, successor);
+
+            node.key = successor.key;
+            node.value = successor.value;
+
+            // Where should the digest of the node digest be updated? After the recursive call of course since our
+            // since the subtree will be changing!
+
+            _deleteNode(successor);
+
+            // exit function so that we don't call the _inspectDeletion twice
+            return;
+        }
+
+        // Update parent's height and re-balance the tree
+        if (nodeParent != null) {
+            nodeParent.height = 1 + Math.max(_getHeight(nodeParent.leftChild), _getHeight(nodeParent.rightChild));
+            _inspectDeletion(nodeParent);
+        }
+    }
+
+    private void _inspectDeletion(Node<VersionType, KeyType, BucketRowType> curNode) throws Exception {
+        if (curNode == null) {
+            return;
+        }
+
+        int left_height = _getHeight(curNode.leftChild);
+        int right_height = _getHeight(curNode.rightChild);
+
+        if (Math.abs(left_height - right_height) > 1) {
+            Node<VersionType, KeyType, BucketRowType> y = _tallerChild(curNode);
+            Node<VersionType, KeyType, BucketRowType> x = _tallerChild(y);
+            System.out.println("Re-balancing at trio " + curNode.key + ", " + y.key + ", " + x.key);
+            Node<VersionType, KeyType, BucketRowType> rebalanced_root = _rebalanceNode(curNode, y, x);
+
+            System.out.println("Rebalanced head at " + rebalanced_root.key);
+
+            // Update digests from the rebalanced_root until the head, then exit the function
+            while (rebalanced_root.parent != null) {
+                rebalanced_root.parent.processDigest(this.toweredTypeUtils);
+                rebalanced_root = rebalanced_root.parent;
+            }
+            return;
+        }
+
+        // # Update the parent's digest as no re-balancing was required
+        curNode.processDigest(this.toweredTypeUtils);
+
+        _inspectDeletion(curNode.parent);
+    }
+
+//    private void swapNodes(Node<VersionType, KeyType, BucketRowType> node, Node<VersionType, KeyType, BucketRowType> successor) throws Exception {
+//        System.out.println("Node: " + node.key + " | Successor: " + successor.key);
+//        // Handle successor's parent
+//        if (successor.parent != node) {
+//            successor.parent.leftChild = node;
+//            node.parent = successor.parent;
+//        }
+//        successor.parent = node.parent;
+//
+//        // Handle node's parent
+//        if (node.parent != null) {
+//            if (node.parent.leftChild == node) {
+//                node.parent.leftChild = successor;
+//            } else {
+//                node.parent.rightChild = successor;
+//            }
+//        } else {
+//            this.head = successor;
+//        }
+//
+//        // Swap left children
+//        successor.leftChild = node.leftChild;
+//        node.leftChild = null;
+//
+//        if (successor.leftChild != null) {
+//            successor.leftChild.parent = successor;
+//        }
+//
+//        // Swap right children
+//        if (successor == node.rightChild) {
+//            node.rightChild = null;
+//        }
+//        else {
+//            Node<VersionType, KeyType, BucketRowType> tmp = successor.rightChild;
+//            successor.rightChild = node.rightChild;
+//            node.rightChild = tmp;
+//
+//            if (node.rightChild != null) {
+//                node.rightChild.parent = node;
+//            }
+//        }
+//
+//        // Swap heights
+//        int tmpHeight = node.height;
+//        node.height = successor.height;
+//        successor.height = tmpHeight;
+//
+//        if (successor != node.rightChild) {
+//            _deleteNode(node);
+//        }
+//    }
 
     private void _inspectInsertion(Node<VersionType, KeyType, BucketRowType> curNode,
                                    ArrayList<Node<VersionType, KeyType, BucketRowType>> path) throws Exception {
         if (curNode.parent == null) return;
         path.add(0, curNode); // Prepend curNode to the path
 
-        int leftHeight = getHeight(curNode.parent.leftChild);
-        int rightHeight = getHeight(curNode.parent.rightChild);
+        int leftHeight = _getHeight(curNode.parent.leftChild);
+        int rightHeight = _getHeight(curNode.parent.rightChild);
 
         if (Math.abs(leftHeight - rightHeight) > 1) {
             path.add(0, curNode.parent);
-            System.out.println("Rebalancing starting at node " + curNode.parent.key);
+            System.out.println("Re-balancing at trio " + path.get(0).key + ", " + path.get(1).key + ", " + path.get(2).key);
             Node<VersionType, KeyType, BucketRowType> rebalanced_root = _rebalanceNode(path.get(0), path.get(1), path.get(2));
 
-            System.out.println("Rebalanced root at " + rebalanced_root.key);
-
-            // Update digests from the rebalanced root up, then exit the function
-            while (rebalanced_root.parent != null) {
-                rebalanced_root.parent.processDigest(this.toweredTypeUtils);
-                rebalanced_root = rebalanced_root.parent;
-            }
+            // Update digests of its parents
+            _updateParentsDigests(rebalanced_root);
             return;
         }
 
@@ -128,7 +307,6 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
         }
 
         // # Update the parent's digest as no re-balancing was required
-        System.out.println("Updating my parent's digest");
         curNode.parent.processDigest(this.toweredTypeUtils);
 
         _inspectInsertion(curNode.parent, path);
@@ -140,7 +318,7 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
         //  z => The unbalanced node
         //  y => The child of z
         //  x => The child of y
-        // Returns the root of balanced subtree
+        // Returns the head of balanced subtree
         if (y == z.leftChild && x == y.leftChild) {
             _rightRotate(z);
             return y;
@@ -185,8 +363,8 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
             }
         }
 
-        z.height = 1 + Math.max(getHeight(z.leftChild), getHeight(z.rightChild));
-        y.height = 1 + Math.max(getHeight(y.leftChild), getHeight(y.rightChild));
+        z.height = 1 + Math.max(_getHeight(z.leftChild), _getHeight(z.rightChild));
+        y.height = 1 + Math.max(_getHeight(y.leftChild), _getHeight(y.rightChild));
 
         // Update the digests of z and y (Since z is the child of y, we first update z)
         z.processDigest(this.toweredTypeUtils);
@@ -218,20 +396,46 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
             }
         }
 
-        z.height = 1 + Math.max(getHeight(z.leftChild), getHeight(z.rightChild));
-        y.height = 1 + Math.max(getHeight(y.leftChild), getHeight(y.rightChild));
+        z.height = 1 + Math.max(_getHeight(z.leftChild), _getHeight(z.rightChild));
+        y.height = 1 + Math.max(_getHeight(y.leftChild), _getHeight(y.rightChild));
 
         // Update the digests of z and y (Since z is the child of y, we first update z)
         z.processDigest(this.toweredTypeUtils);
         y.processDigest(this.toweredTypeUtils);
     }
 
-    private int getHeight(Node<VersionType, KeyType, BucketRowType> node) throws Exception {
+    private int _getHeight(Node<VersionType, KeyType, BucketRowType> node) throws Exception {
         if (node == null) return 0;
         return node.height;
     }
 
-    public void commitCurrentVersion(VersionType nextVersion) throws Exception {
+    private int _numChildren(Node<VersionType, KeyType, BucketRowType> node) throws Exception {
+        int count = 0;
+        if (node.leftChild != null) count++;
+        if (node.rightChild != null) count++;
+        return count;
+    }
+
+    private Node<VersionType, KeyType, BucketRowType> _tallerChild(Node<VersionType, KeyType, BucketRowType> curNode) throws Exception {
+        int left = _getHeight(curNode.leftChild);
+        int right = _getHeight(curNode.rightChild);
+        if (left >= right) {
+            return curNode.leftChild;
+        }
+        else {
+            return curNode.rightChild;
+        }
+    }
+
+    private Node<VersionType, KeyType, BucketRowType> _minNode(Node<VersionType, KeyType, BucketRowType> node) throws Exception {
+        Node<VersionType, KeyType, BucketRowType> current = node;
+        while (current.leftChild != null) {
+            current = current.leftChild;
+        }
+        return current;
+    }
+
+    private void commitCurrentVersion(VersionType nextVersion) throws Exception {
         Utils.checkVersions(this.currentVersion, nextVersion);
         this.currentVersion = nextVersion;
         System.out.println("Current version: " + this.currentVersion);
@@ -311,7 +515,7 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
 
 
     // TODO: Remove
-    private static ArrayList<Integer> generateSortedNumbers(int init, int step, int count) {
+    public static ArrayList<Integer> generateSortedNumbers(int init, int step, int count) {
         ArrayList<Integer> list = new ArrayList<>();
         int cur = init;
         for (int i = 0; i< count; i++) {
@@ -323,8 +527,8 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
 
     // demo tests
     public static void main(String[] args) throws Exception {
-        int patientIDsSize = 7;
-        int patientIDsPerDayCount = 7;
+        int patientIDsSize = 8;
+        int patientIDsPerDayCount = 8;
         int datesCount = 1;
         int firstPatientID = 1;
 
@@ -345,7 +549,7 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
         // Generate data
         ArrayList<TupleTwo<Integer, Date>> data = new ArrayList<>();
         for (Date date : sequentialDates) {
-              Collections.shuffle(patientIDs);
+            Collections.shuffle(patientIDs);
             for (int i=0; i<patientIDsPerDayCount; i++) {
                 data.add(new TupleTwo<>(patientIDs.get(i), date));
             }
@@ -374,38 +578,45 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
 
         AVLTree<Date, Integer, TableRowIntDateCols> index = new AVLTree<>(firstVersion, 1, tableIntDateColsIndexTypeUtils);
 
+        // Print the synthetic dataset
         for (TableRowIntDateCols row: data_) {
             System.out.println(row.col1 + ", " + row.col2);
         }
 
+        // Insert the dataset
         for (TableRowIntDateCols row: data_) {
-            System.out.println("Inserting: " + row.col1 + " | " + row.col2);
+            System.out.println(row.col1 + " | " + row.col2);
             if (!currentVersion.equals(row.col2)) {
                 currentVersion = row.col2;
                 index.commitCurrentVersion(currentVersion);
             }
-            index.update_insert(row);
+            index.upsert(row);
 
             // Print the tree
             System.out.println(index);
 
         }
 
+        // Delete
+        Random random = new Random();
+        TableRowIntDateCols del_row = index.delete(random.nextInt(patientIDsSize) + 1);
+        System.out.println(index);
 
-        int totalRowsToUpdate = (int) (data_.size() * 0.2);
-        System.out.println("Total rows to update: " + totalRowsToUpdate);
-        Collections.shuffle(data_);
 
-        // Update only the first 20% of the shuffled rows
-        for (int i = 0; i < totalRowsToUpdate; i++) {
-            TableRowIntDateCols row = data_.get(i);
-            // Update the version to a random date (in this case, a fixed sample date for demonstration)
-            LocalDate tmp = LocalDate.of(2023, Month.FEBRUARY, 28);
-            Date sampleDate = Date.from(tmp.atStartOfDay(defaultZoneId).toInstant());
-            TableRowIntDateCols updateRow = new TableRowIntDateCols(row.col1, sampleDate, tableIntDateColsIndexTypeUtils.vTypeUtils);
-
-            System.out.println("Updating: " + updateRow.col1 + " | " + updateRow.col2);
-            index.update_insert(updateRow);
-        }
+        // Randomly update 20% of the shuffled rows
+//        int totalRowsToUpdate = (int) (data_.size() * 0.2);
+//        System.out.println("Total rows to update: " + totalRowsToUpdate);
+//        Collections.shuffle(data_);
+//
+//        for (int i = 0; i < totalRowsToUpdate; i++) {
+//            TableRowIntDateCols row = data_.get(i);
+//            // Update the version to a random date (in this case, a fixed sample date for demonstration)
+//            LocalDate tmp = LocalDate.of(2023, Month.FEBRUARY, 28);
+//            Date sampleDate = Date.from(tmp.atStartOfDay(defaultZoneId).toInstant());
+//            TableRowIntDateCols updateRow = new TableRowIntDateCols(row.col1, sampleDate, tableIntDateColsIndexTypeUtils.vTypeUtils);
+//
+//            System.out.println("Updating: " + updateRow.col1 + " | " + updateRow.col2);
+//            index.update_insert(updateRow);
+//        }
     }
 }
