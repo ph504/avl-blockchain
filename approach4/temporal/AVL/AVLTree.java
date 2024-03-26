@@ -321,17 +321,33 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
         // Returns the head of balanced subtree
         if (y == z.leftChild && x == y.leftChild) {
             _rightRotate(z);
+            // y is root, x is l child, z is r child
+            x.processDigest(this.toweredTypeUtils);
+            z.processDigest(this.toweredTypeUtils);
+            y.processDigest(this.toweredTypeUtils);
             return y;
         } else if (y == z.leftChild && x == y.rightChild) {
             _leftRotate(y);
             _rightRotate(z);
+            // x is root, z is l child, y is r child
+            z.processDigest(this.toweredTypeUtils);
+            y.processDigest(this.toweredTypeUtils);
+            x.processDigest(this.toweredTypeUtils);
             return x;
         } else if (y == z.rightChild && x == y.rightChild) {
             _leftRotate(z);
+            // y is root, z is l child, x is r child
+            z.processDigest(this.toweredTypeUtils);
+            x.processDigest(this.toweredTypeUtils);
+            y.processDigest(this.toweredTypeUtils);
             return y;
         } else if (y == z.rightChild && x == y.leftChild) {
             _rightRotate(y);
             _leftRotate(z);
+            // x is root, y is l child, z is r child
+            y.processDigest(this.toweredTypeUtils);
+            z.processDigest(this.toweredTypeUtils);
+            x.processDigest(this.toweredTypeUtils);
             return x;
         } else {
             throw new Exception("z,y,x node configuration not recognized!");
@@ -367,8 +383,8 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
         y.height = 1 + Math.max(_getHeight(y.leftChild), _getHeight(y.rightChild));
 
         // Update the digests of z and y (Since z is the child of y, we first update z)
-        z.processDigest(this.toweredTypeUtils);
-        y.processDigest(this.toweredTypeUtils);
+        // z.processDigest(this.toweredTypeUtils);
+        // y.processDigest(this.toweredTypeUtils);
     }
 
     private void _leftRotate(Node<VersionType, KeyType, BucketRowType> z) throws Exception {
@@ -400,8 +416,8 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
         y.height = 1 + Math.max(_getHeight(y.leftChild), _getHeight(y.rightChild));
 
         // Update the digests of z and y (Since z is the child of y, we first update z)
-        z.processDigest(this.toweredTypeUtils);
-        y.processDigest(this.toweredTypeUtils);
+        // z.processDigest(this.toweredTypeUtils);
+        // y.processDigest(this.toweredTypeUtils);
     }
 
     private int _getHeight(Node<VersionType, KeyType, BucketRowType> node) throws Exception {
@@ -600,6 +616,7 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
         // Delete
         Random random = new Random();
         TableRowIntDateCols del_row = index.delete(random.nextInt(patientIDsSize) + 1);
+        System.out.println(del_row);
         System.out.println(index);
 
 
