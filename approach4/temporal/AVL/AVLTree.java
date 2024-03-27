@@ -468,7 +468,7 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
         return current;
     }
 
-    private void commitCurrentVersion(VersionType nextVersion) throws Exception {
+    public void commitCurrentVersion(VersionType nextVersion) throws Exception {
         Utils.checkVersions(this.currentVersion, nextVersion);
         this.currentVersion = nextVersion;
         System.out.println("Current version: " + this.currentVersion);
