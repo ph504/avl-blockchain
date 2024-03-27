@@ -68,6 +68,11 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
     }
 
     
+    /**
+     * when this is called?
+     * @param row
+     * @throws Exception
+     */
     public void upsert(BucketRowType row) throws Exception {
         KeyType key = row.getKey();
         if (this.head == null) {
@@ -549,6 +554,7 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
 
     // TODO: Remove
     public static ArrayList<Integer> generateSortedNumbers(int init, int step, int count) {
+        // equivalent to range list in python.
         ArrayList<Integer> list = new ArrayList<>();
         int cur = init;
         for (int i = 0; i< count; i++) {
@@ -560,15 +566,25 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
 
     // demo tests
     public static void main(String[] args) throws Exception {
-        int patientIDsSize = 8;
-        int patientIDsPerDayCount = 8;
-        int datesCount = 1;
-        int firstPatientID = 1;
 
+        // number of patients being generated
+        int patientIDsCount = 8;
+
+        // 
+        int patientIDsPerDayCount = 8;
+
+        // number of days
+        int datesCount = 1;
+
+        // indexing patient IDs
+        int firstPatientID = 1;
+        
         LocalDate startLocalDate = LocalDate.of(2024, Month.MARCH, 10);
         LocalDate currentLocalDate = startLocalDate;
         ZoneId defaultZoneId = ZoneId.systemDefault();
-        ArrayList<Date> sequentialDates = new ArrayList<>(); // Dates starting from 2015 until datesCount goes to zero
+        
+        // Dates starting from 2015 until datesCount goes to zero
+        ArrayList<Date> sequentialDates = new ArrayList<>(); 
 
         while (datesCount > 0) {
             Date currentDate = Date.from(currentLocalDate.atStartOfDay(defaultZoneId).toInstant());
@@ -577,7 +593,7 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
             datesCount--;
         }
 
-        ArrayList<Integer> patientIDs = generateSortedNumbers(firstPatientID, 1, patientIDsSize);
+        ArrayList<Integer> patientIDs = generateSortedNumbers(firstPatientID, 1, patientIDsCount);
 
         // Generate data
         ArrayList<TupleTwo<Integer, Date>> data = new ArrayList<>();
@@ -593,6 +609,7 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
         ToweredTypeUtils<Integer, TableRowIntDateCols> tableIntDateColsIndexTypeUtils = new ToweredTypeUtils<>(integerClassUtils, tableRowIntDateColsClassUtils);
 
         // Convert data to type data_
+        // which just contains the utils type extra to data.
         List<TableRowIntDateCols> data_ = new ArrayList<>(data.size());
         for (TupleTwo<Integer, Date> row : data) {
             TableRowIntDateCols tr = new TableRowIntDateCols(row.first, row.second, tableIntDateColsIndexTypeUtils.vTypeUtils);
@@ -619,6 +636,7 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
         // Insert the dataset
         for (TableRowIntDateCols row: data_) {
             System.out.println(row.col1 + " | " + row.col2);
+            // if new version immediately commit previous one
             if (!currentVersion.equals(row.col2)) {
                 currentVersion = row.col2;
                 index.commitCurrentVersion(currentVersion);
@@ -632,7 +650,7 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
 
         // Delete
         Random random = new Random();
-        TableRowIntDateCols del_row = index.delete(random.nextInt(patientIDsSize) + 1);
+        TableRowIntDateCols del_row = index.delete(random.nextInt(patientIDsCount) + 1);
         System.out.println(del_row);
         System.out.println(index);
 
