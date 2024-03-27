@@ -27,7 +27,7 @@ public class ExtendedMultiVersionSkipList
 
 
     /**
-     *
+     * constructor
      * @param initVersion
      * @param iterationProbability
      * @param versionsToKeysIndex
