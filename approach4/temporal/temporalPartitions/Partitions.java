@@ -174,7 +174,8 @@ public class Partitions<K extends Comparable<K>, T extends IRowDetails<K,T,V> , 
 //        return posRes;
 //    }
 
-    public void search(V verStart, V verEnd, ArrayList<IRowDetails<K,T,V>> foundRows) throws Exception {
+    public void
+    search(V verStart, V verEnd, ArrayList<IRowDetails<K,T,V>> foundRows) throws Exception {
 //        Utils.assertTrue(verStart.compareTo(verEnd) <= 0);
 
         if (this.isEmpty()) {

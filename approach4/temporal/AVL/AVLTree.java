@@ -43,6 +43,9 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
         this.toweredTypeUtils = toweredTypeUtils;
     }
 
+    public Node<VersionType, KeyType, BucketRowType> getHead() {
+        return head;
+    }
 
     /**
      * logic: BST search,
@@ -67,7 +70,10 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
         return null;
     }
 
-    
+    public ToweredTypeUtils<KeyType, BucketRowType> getToweredTypeUtils() {
+        return toweredTypeUtils;
+    }
+
     /**
      * when this is called?
      * @param row
@@ -88,7 +94,7 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
                        BucketRowType row, 
                        Node<VersionType, KeyType, BucketRowType> currentNode) throws Exception{
         if (key.compareTo(currentNode.key)<0)
-            if (currentNode.leftChild == null){
+            if (currentNode.leftChild == null) {
                 System.out.println("Inserting");
                 // set as left child
                 currentNode.leftChild = new Node<VersionType, KeyType, BucketRowType>(this.currentVersion, row, this.partitionCapacity);
@@ -96,7 +102,7 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
                 currentNode.leftChild.parent = currentNode;
                 // Initialize the digest for the inserted node
                 currentNode.leftChild.processDigest(this.toweredTypeUtils);
-                 inspectInsertion(currentNode.leftChild, new ArrayList<Node<VersionType, KeyType, BucketRowType>>());
+                   inspectInsertion(currentNode.leftChild, new ArrayList<Node<VersionType, KeyType, BucketRowType>>());
             }
             else upsert(key, row, currentNode.leftChild);
         
@@ -199,7 +205,7 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
             child.parent = nodeParent;
 
         } else { // CASE 3: Two children
-            Node<VersionType, KeyType, BucketRowType> successor = _minNode(node.rightChild);
+            Node<VersionType, KeyType, BucketRowType> successor = minNode(node.rightChild);
 
             // swapNodes(node, successor);
 
@@ -231,8 +237,8 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
         int right_height = getHeight(curNode.rightChild);
 
         if (Math.abs(left_height - right_height) > 1) {
-            Node<VersionType, KeyType, BucketRowType> y = _tallerChild(curNode);
-            Node<VersionType, KeyType, BucketRowType> x = _tallerChild(y);
+            Node<VersionType, KeyType, BucketRowType> y = tallerChild(curNode);
+            Node<VersionType, KeyType, BucketRowType> x = tallerChild(y);
             System.out.println("Re-balancing at trio " + curNode.key + ", " + y.key + ", " + x.key);
             Node<VersionType, KeyType, BucketRowType> rebalanced_root = _rebalanceNode(curNode, y, x);
 
@@ -454,7 +460,7 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
         return count;
     }
 
-    private Node<VersionType, KeyType, BucketRowType> _tallerChild(Node<VersionType, KeyType, BucketRowType> curNode) throws Exception {
+    private Node<VersionType, KeyType, BucketRowType> tallerChild(Node<VersionType, KeyType, BucketRowType> curNode) throws Exception {
         int left = getHeight(curNode.leftChild);
         int right = getHeight(curNode.rightChild);
         if (left >= right) {
@@ -465,7 +471,7 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
         }
     }
 
-    private Node<VersionType, KeyType, BucketRowType> _minNode(Node<VersionType, KeyType, BucketRowType> node) throws Exception {
+    private Node<VersionType, KeyType, BucketRowType> minNode(Node<VersionType, KeyType, BucketRowType> node) throws Exception {
         Node<VersionType, KeyType, BucketRowType> current = node;
         while (current.leftChild != null) {
             current = current.leftChild;

@@ -44,12 +44,12 @@ public class Main {
     static final String runsAvgProcessed = "RunsAvgProcessed";
     static int partitionCapacity = 5;
 
+    // different algorithms to run scenarios on.
     static final String merkleBucketTree = "merkleBucketTree";
     static final String patriciaMerkleTrie = "patriciaMerkleTrie";
     static final String temporalSkipList = "temporalSkipList";
-
-    // Q: What are these? 
     static final String temporalIndex = "temporalIndex";
+    static final String avlTreeIndex = "avlTreeIndex";
     static final String verToIndex = "verToIndex";
     static final String phTreeIndex = "PHTree";
     static final String merkleKDTreeIndex = "MerkleKDTree";
@@ -900,6 +900,7 @@ public class Main {
 
         runScenario2(logPrefix, "Scenario2" + logPostfix, filesMetaData, itemsCounts, versionsCounts, runs, keysPercentsCounts);
 
+        // averaging results
         ProcessRunsAvg(Paths.get(logPrefix + merkleBucketTree + "Scenario2" + logPostfix),
                 Paths.get(logPrefix + merkleBucketTree + "Scenario2" + runsAvgProcessed + logPostfix),
                 filesMetaData.get(merkleBucketTree), new HashSet<>(Arrays.asList(0, 1, 2)));
@@ -959,6 +960,7 @@ public class Main {
         Path pathPatriciaMerkleTrieScenario = Paths.get(logPrefix + patriciaMerkleTrie + logPostfix);
         Path pathTempSkipListScenario = Paths.get(logPrefix + temporalSkipList + logPostfix);
         Path pathTempIndexScenario = Paths.get(logPrefix + temporalIndex + logPostfix);
+        Path pathAVLTreeScenario = Paths.get(logPrefix+avlTreeIndex+logPostfix);
         Path pathPhTreeIndexScenario = Paths.get(logPrefix + phTreeIndex + logPostfix);
         Path pathMerkleKDTreeIndexScenario = Paths.get(logPrefix + merkleKDTreeIndex + logPostfix);
 
@@ -968,6 +970,7 @@ public class Main {
             initFile(patriciaMerkleTrie, filesMetaData, pathPatriciaMerkleTrieScenario);
             initFile(temporalSkipList, filesMetaData, pathTempSkipListScenario);
             initFile(temporalIndex, filesMetaData, pathTempIndexScenario);
+            initFile(avlTreeIndex, filesMetaData, pathAVLTreeScenario);
             initFile(phTreeIndex, filesMetaData, pathPhTreeIndexScenario);
             initFile(merkleKDTreeIndex, filesMetaData, pathMerkleKDTreeIndexScenario);
         }
@@ -975,7 +978,7 @@ public class Main {
         int runsCount = (int) settings.get("runsCount");
         int itemsCount = (int) settings.get("itemsCount");
         int versionsCount = (int) settings.get("versionsCount");
-        int MBTCapacity = (int) settings.get("MBTCapacity");
+//        int MBTCapacity = (int) settings.get("MBTCapacity");
         int temporalIndexCapacity = (int) settings.get("temporalIndexCapacity");
         double percent = (double) settings.get("percent");
 
@@ -1032,19 +1035,14 @@ public class Main {
             // the naming convention is... we could use V for version and R for rows?
             // >
             index = new SkipListMVIntDateWrapper(
-                    // Type KVER
                     firstVersion,
-
                     // the probability to build a new level
                     // iterationProbability=0.5 here
                     iterationProbability,
-
                     // the DS for mapping
                     versionsToKeysIndex,
-
                     // partitionCapacity=0 here.
                     partitionCapacity,
-
                     // used solely for the int part I think that relates to digest
                     // don't understand the bucket row part tho, where it's used is kinda vague and why it's there is kinda vague too.
                     tableIntDateColsIndexTypeUtils);
@@ -1058,14 +1056,37 @@ public class Main {
             writeScenarioResultsToFile(pathTempSkipListScenario, skipListIndexRunRes);
 
             // AVL Index Code
-//            index = new XAVLTree();
+            index = new XAVLTree(
+                    firstVersion,
+                    iterationProbability,           // iterationProbability=0.5 here
+                    versionsToKeysIndex,            // the DS for mapping
+                    partitionCapacity,              // partitionCapacity=0 here.
+                    tableIntDateColsIndexTypeUtils
+            );
+            Map<String, Object> avlTreeIndexRes =
+                    SearchMVScenarios(
+                            "tableStrIntColsSkipListIndex",
+                            index,
+                            data_,
+                            percent);
+            writeScenarioResultsToFile(pathAVLTreeScenario, avlTreeIndexRes);
 
             index = new PHTreeIntDateWrapper();
-            Map<String, Object> phTreeIndexRunRes = SearchMVScenarios("phTreeIndex", index, data_, percent);
+            Map<String, Object> phTreeIndexRunRes =
+                    SearchMVScenarios(
+                            "phTreeIndex",
+                            index,
+                            data_,
+                            percent);
             writeScenarioResultsToFile(pathPhTreeIndexScenario, phTreeIndexRunRes);
 
             index = new MerkleKDTreeIntDateWrapper();
-            Map<String, Object> merkleKDTreeIndexRunRes = SearchMVScenarios("merkleKDTreeIndex", index, data_, percent);
+            Map<String, Object> merkleKDTreeIndexRunRes =
+                    SearchMVScenarios(
+                            "merkleKDTreeIndex",
+                            index,
+                            data_,
+                            percent);
             writeScenarioResultsToFile(pathMerkleKDTreeIndexScenario, merkleKDTreeIndexRunRes);
 
 
@@ -1190,7 +1211,7 @@ public class Main {
         System.out.println(indexName + " insert-commit time (s): " + insertLs);
 
 
-       List<Integer> keysArrFirstFractionSortedElements = keys.stream().sorted().limit(keysArrFractionCount).collect(Collectors.toList());
+        List<Integer> keysArrFirstFractionSortedElements = keys.stream().sorted().limit(keysArrFractionCount).collect(Collectors.toList());
         Integer keyStart = keysArrFirstFractionSortedElements.get(0);
         Integer keyEnd = keysArrFirstFractionSortedElements.get(keysArrFirstFractionSortedElements.size() - 1);
 
