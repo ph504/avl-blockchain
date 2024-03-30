@@ -92,18 +92,19 @@ public class XAVLTree implements IIndexMVIntDate {
 
         // if there are outside the keyrange, ignore these nodes.
         if(head.key > keyEnd) return;
-        else if(head.key < keyStart) return;
-        // if within the range or equal. find the version and expand further.
-        else {
-            IRowDetails<Integer, TableRowIntDateCols, Date> row = head.value.search(version);
-            // only add if the key is relevant to the specified version.
-            if (row!=null) outputRows.add(row);
-            // expand leftchild
-            rangeSearchTraversal(head.leftChild, version, keyStart, keyEnd, outputRows);
+        if(head.key < keyStart) return;
 
-            // expand rightchild
-            rangeSearchTraversal(head.rightChild, version, keyStart, keyEnd, outputRows);
-        }
+        // if within the range or equal. find the version and expand further.
+
+        IRowDetails<Integer, TableRowIntDateCols, Date> row = head.value.search(version);
+        // only add if the key is relevant to the specified version.
+        if (row!=null) outputRows.add(row);
+        // expand leftchild
+        rangeSearchTraversal(head.leftChild, version, keyStart, keyEnd, outputRows);
+
+        // expand rightchild
+        rangeSearchTraversal(head.rightChild, version, keyStart, keyEnd, outputRows);
+
     }
     @Override
     public void rangeSearch1(
@@ -124,18 +125,30 @@ public class XAVLTree implements IIndexMVIntDate {
             Date version,
             Integer keyStart,
             Integer keyEnd,
-            List<Object> rows)
+            List<Object> outputRows)
                 throws Exception {
 
     }
 
     @Override
-    public void rangeSearch2(Date verStart, Date verEnd, Integer key, ArrayList<IRowDetails<Integer, TableRowIntDateCols, Date>> rows) throws Exception {
+    public void rangeSearch2(
+            Date verStart,
+            Date verEnd,
+            Integer key,
+            ArrayList<IRowDetails<Integer, TableRowIntDateCols, Date>> outputRows)
+                throws Exception {
+
+
 
     }
 
     @Override
-    public void rangeSearch2(Date verStart, Date verEnd, Integer key, List<Object> rows) throws Exception {
+    public void rangeSearch2(
+            Date verStart,
+            Date verEnd,
+            Integer key,
+            List<Object> outputRows)
+                throws Exception {
 
     }
 
