@@ -5,10 +5,8 @@ import approach4.Utils;
 import approach4.temporal.AVL.AVLTree;
 import approach4.temporal.AVL.Node;
 import approach4.temporal.VersionToKey.IVersionsToKeysIndex;
-import approach4.temporal.skipList.ToweredSkipList;
 import approach4.temporal.skipList.ToweredTypeUtils;
 import approach4.valueDataStructures.TableRowIntDateCols;
-import approach4.valueDataStructures.Version;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -86,15 +84,25 @@ public class XAVLTree implements IIndexMVIntDate {
 
     public void rangeSearchTraversal(
             Node<Date, Integer, TableRowIntDateCols> head,
+            Date version,
             Integer keyStart,
             Integer keyEnd,
-            ArrayList<IRowDetails<Integer, TableRowIntDateCols, Date>> outputRows) {
+            ArrayList<IRowDetails<Integer, TableRowIntDateCols, Date>> outputRows)
+                throws Exception{
 
-        if(head.key > keyEnd)
+        // if there are outside the keyrange, ignore these nodes.
+        if(head.key > keyEnd) return;
         else if(head.key < keyStart) return;
+        // if within the range or equal. find the version and expand further.
         else {
-            outputRows.add(head.value);
-            rangeSearchTraversal(head.leftChild,righ);
+            IRowDetails<Integer, TableRowIntDateCols, Date> row = head.value.search(version);
+            // only add if the key is relevant to the specified version.
+            if (row!=null) outputRows.add(row);
+            // expand leftchild
+            rangeSearchTraversal(head.leftChild, version, keyStart, keyEnd, outputRows);
+
+            // expand rightchild
+            rangeSearchTraversal(head.rightChild, version, keyStart, keyEnd, outputRows);
         }
     }
     @Override
@@ -108,7 +116,7 @@ public class XAVLTree implements IIndexMVIntDate {
         Node<Date, Integer, TableRowIntDateCols> head = avlTree.getHead();
 
         // start an iteration
-        rangeSearchTraversal(head, keyStart, keyEnd, outputRows);
+        rangeSearchTraversal(head, version, keyStart, keyEnd, outputRows);
     }
 
     @Override
@@ -151,8 +159,8 @@ public class XAVLTree implements IIndexMVIntDate {
 
     }
 
-//    // running the demo
-//    public static void main(String[] args) {
-//
-//    }
+    // running the demo
+    public static void main(String[] args) {
+
+    }
 }
