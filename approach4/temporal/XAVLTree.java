@@ -82,28 +82,62 @@ public class XAVLTree implements IIndexMVIntDate {
         // update no code
     }
 
-    public void rangeSearchTraversal(
-            Node<Date, Integer, TableRowIntDateCols> head,
+    public void mvskSearchTraversal(
+            Node<Date, Integer, TableRowIntDateCols> node,
+            Date verStart,
+            Date verEnd,
+            Integer key,
+            ArrayList<IRowDetails<Integer, TableRowIntDateCols, Date>> outputRows)
+                throws Exception {
+
+        if (node==null) return;
+
+        if (node.key > key) {
+            mvskSearchTraversal(node.rightChild, verStart, verEnd, key, outputRows);
+            return;
+        }
+
+        if (node.key < key){
+            mvskSearchTraversal(node.leftChild, verStart, verEnd, key, outputRows);
+            return;
+        }
+
+        // We found the key.
+        // find the versions
+        node.value.search(verStart, verEnd, outputRows);
+
+    }
+    public void svrkSearchTraversal(
+            Node<Date, Integer, TableRowIntDateCols> node,
             Date version,
             Integer keyStart,
             Integer keyEnd,
-            ArrayList<IRowDetails<Integer, TableRowIntDateCols, Date>> outputRows)
+            List<Object> outputRows)
                 throws Exception{
 
+        if(node==null) return;
         // if there are outside the keyrange, ignore these nodes.
-        if(head.key > keyEnd) return;
-        else if(head.key < keyStart) return;
-        // if within the range or equal. find the version and expand further.
-        else {
-            IRowDetails<Integer, TableRowIntDateCols, Date> row = head.value.search(version);
-            // only add if the key is relevant to the specified version.
-            if (row!=null) outputRows.add(row);
-            // expand leftchild
-            rangeSearchTraversal(head.leftChild, version, keyStart, keyEnd, outputRows);
 
-            // expand rightchild
-            rangeSearchTraversal(head.rightChild, version, keyStart, keyEnd, outputRows);
+        if(node.key > keyEnd) {
+            svrkSearchTraversal(node.rightChild, version, keyStart, keyEnd, outputRows);
+            return;
         }
+
+        else if(node.key < keyStart) {
+            svrkSearchTraversal(node.leftChild, version, keyStart, keyEnd, outputRows);
+            return;
+        }
+
+        // if within the range or equal. find the version and expand further.
+        IRowDetails<Integer, TableRowIntDateCols, Date> row = node.value.search(version);
+        // only add if the key is relevant to the specified version.
+        if (row!=null) outputRows.add(row);
+        // expand leftchild
+        svrkSearchTraversal(node.leftChild, version, keyStart, keyEnd, outputRows);
+
+        // expand rightchild
+        svrkSearchTraversal(node.rightChild, version, keyStart, keyEnd, outputRows);
+
     }
     @Override
     public void rangeSearch1(
@@ -116,7 +150,7 @@ public class XAVLTree implements IIndexMVIntDate {
         Node<Date, Integer, TableRowIntDateCols> head = avlTree.getHead();
 
         // start an iteration
-        rangeSearchTraversal(head, version, keyStart, keyEnd, outputRows);
+        svrkSearchTraversal(head, version, keyStart, keyEnd, outputRows);
     }
 
     @Override
@@ -124,28 +158,56 @@ public class XAVLTree implements IIndexMVIntDate {
             Date version,
             Integer keyStart,
             Integer keyEnd,
-            List<Object> rows)
+            List<Object> outputRows)
+                throws Exception {
+        Node<Date, Integer, TableRowIntDateCols> head = avlTree.getHead();
+
+        // start an iteration
+        svrkSearchTraversal(head, version, keyStart, keyEnd, outputRows);
+    }
+
+    @Override
+    public void rangeSearch2(
+            Date verStart,
+            Date verEnd,
+            Integer key,
+            ArrayList<IRowDetails<Integer, TableRowIntDateCols, Date>> outputRows)
+                throws Exception {
+
+        Node<Date, Integer, TableRowIntDateCols> head = avlTree.getHead();
+        // start the traversal with the head
+        mvskSearchTraversal(head, verStart,verEnd,key,outputRows);
+    }
+
+//    @Override
+//    public void rangeSearch2(
+//            Date verStart,
+//            Date verEnd,
+//            Integer key,
+//            List<Object> outputRows)
+//                                throws Exception {
+//
+//    }
+
+    @Override
+    public void rangeSearch3(
+            Date verStart,
+            Date verEnd,
+            Integer keyStart,
+            Integer keyEnd,
+            ArrayList<IRowDetails<Integer, TableRowIntDateCols, Date>> rows)
                 throws Exception {
 
     }
 
     @Override
-    public void rangeSearch2(Date verStart, Date verEnd, Integer key, ArrayList<IRowDetails<Integer, TableRowIntDateCols, Date>> rows) throws Exception {
-
-    }
-
-    @Override
-    public void rangeSearch2(Date verStart, Date verEnd, Integer key, List<Object> rows) throws Exception {
-
-    }
-
-    @Override
-    public void rangeSearch3(Date verStart, Date verEnd, Integer keyStart, Integer keyEnd, ArrayList<IRowDetails<Integer, TableRowIntDateCols, Date>> rows) throws Exception {
-
-    }
-
-    @Override
-    public void rangeSearch3(Date verStart, Date verEnd, Integer keyStart, Integer keyEnd, List<Object> rows) throws Exception {
+    public void rangeSearch3(
+            Date verStart,
+            Date verEnd,
+            Integer keyStart,
+            Integer keyEnd,
+            List<Object> rows)
+                throws Exception {
 
     }
 

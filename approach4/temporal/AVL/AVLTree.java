@@ -16,7 +16,9 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * TODO searching
+ * logic: BST search,
+ *      * if (LT) ==> leftChild
+ *      * if (GT) ==> right Child
  * @param <VersionType>
  * @param <KeyType>
  * @param <BucketRowType>
