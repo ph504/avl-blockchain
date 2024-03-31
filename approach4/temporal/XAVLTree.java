@@ -11,6 +11,7 @@ import approach4.valueDataStructures.TableRowIntDateCols;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author: Arya
@@ -215,6 +216,7 @@ public class XAVLTree implements IIndexMVIntDate {
             ArrayList<IRowDetails<Integer, TableRowIntDateCols, Date>> outputRows)
                 throws Exception {
 
+        Utils.assertTrue(keyStart.compareTo(keyEnd) <= 0, "should be true");
         Node<Date, Integer, TableRowIntDateCols> head = avlTree.getHead();
 
         // start an iteration
@@ -239,6 +241,7 @@ public class XAVLTree implements IIndexMVIntDate {
             ArrayList<IRowDetails<Integer, TableRowIntDateCols, Date>> outputRows)
                 throws Exception {
 
+        Utils.assertTrue(verStart.compareTo(verEnd) <= 0, "should be true");
         Node<Date, Integer, TableRowIntDateCols> head = avlTree.getHead();
 
         // start an iteration
@@ -264,6 +267,9 @@ public class XAVLTree implements IIndexMVIntDate {
             Integer keyEnd,
             ArrayList<IRowDetails<Integer, TableRowIntDateCols, Date>> outputRows)
                 throws Exception {
+
+        Utils.assertTrue(keyStart.compareTo(keyEnd) <= 0, "should be true");
+        Utils.assertTrue(verStart.compareTo(verEnd) <= 0, "should be true");
         Node<Date, Integer, TableRowIntDateCols> head = avlTree.getHead();
 
         // start an iteration
@@ -290,7 +296,16 @@ public class XAVLTree implements IIndexMVIntDate {
             ArrayList<IRowDetails<Integer, TableRowIntDateCols, Date>> outputRows)
                 throws Exception {
 
+
+        Utils.assertTrue(verStart.compareTo(verEnd) <= 0, "should be true");
+        Set<Integer> keys = versionsToKeysIndex.getKeys(verStart, verEnd);
+
+        for(Integer key: keys){
+            rangeSearch2(verStart, verEnd, key, outputRows);
+        }
+
     }
+
 
     @Override
     public void rangeSearch4(
