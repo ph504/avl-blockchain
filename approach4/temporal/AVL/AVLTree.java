@@ -569,9 +569,11 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
 //    }
 
 
-    public static void demoRandomSamples() throws Exception{
+    public static void demoRandomSamples(Scanner outputScanner) throws Exception{
 
-        int partitionCapacity = 1;
+
+        int partitionCapacity = 1;          // partitioning the DS within the table that stores versions
+        // entails how many blocks within a partition
 
         int patientIDsCount = 8;            // number of patients being generated
         int patientIDsPerDayCount = 8;
@@ -614,13 +616,115 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
                         partitionCapacity,
                         tableRowUtils);
 
-        // Print the synthetic dataset
-        for (TableRowIntDateCols row: data_) {
+        output(outputScanner,
+               partitionCapacity,
+               data_,
+               currentVersion,
+               index);
+    }
+
+    public static void demoInput(Scanner inputScanner, Scanner outputScanner) throws Exception {
+
+        String in="";
+
+        int partitionCapacity = 1;
+
+        int patientIDsCount = 8;            // number of patients being generated
+        int patientIDsPerDayCount = 8;
+        int datesCount = 1;                 // number of days
+        int firstPatientID = 1;             // indexing patient IDs
+
+        // get configs from user
+        while (true)
+            try {
+                in = promptUser(inputScanner,"partition capacity");
+                partitionCapacity = Integer.parseInt(in);
+
+                in = promptUser(inputScanner,"number of patientIDs");
+                patientIDsCount = Integer.parseInt(in);
+
+                in = promptUser(inputScanner,"number of patientIDs per version");
+                patientIDsPerDayCount = Integer.parseInt(in);
+
+                in = promptUser(inputScanner,"number of versions");
+                datesCount = Integer.parseInt(in);
+
+                in = promptUser(inputScanner,"first patient ID");
+                firstPatientID = Integer.parseInt(in);
+                break;
+            } catch (RuntimeException e){
+                if (in.equals("skip")) break;
+            }
+
+
+
+        List<Date> versions = TableRowUtils.genVersions(datesCount);
+        // get versions from user
+//        while (true)
+//            try {
+//                in = promptUser(inputScanner,"dates. type \"done\" when you are");
+//                versions.add(in);
+//
+//                break;
+//            } catch (RuntimeException e){
+//                if (in.equals("skip")) break;
+//                else versions = TableRowUtils.genVersions(datesCount);
+//            }
+
+        // get keys
+        ArrayList<Integer> keys = new ArrayList<>();
+        while(true) {
+            try {
+                in = promptUser(inputScanner,"dates. type \"done\" when you are");
+                keys.add(Integer.parseInt(in));
+            } catch (RuntimeException e) {
+                if(in.equals("skip")){
+                    keys = IntegerClassUtils.genSortedNums(
+                            firstPatientID,
+                            1,
+                            patientIDsCount);
+                    break;
+                }
+                else if (in.equals("done")) break;
+            }
+        }
+
+        ToweredTypeUtils<Integer, TableRowIntDateCols> tableRowUtils =
+                TableRowUtils.getUtils();
+
+        List<TableRowIntDateCols> data_ =
+                TableRowUtils.getTableRowIntDateCols(
+                        versions,
+                        keys,
+                        patientIDsPerDayCount,
+                        tableRowUtils);
+
+        Date firstVersion = versions.get(0);
+        Date currentVersion = firstVersion;
+
+
+        AVLTree<Date, Integer, TableRowIntDateCols> index =
+                new AVLTree<>(
+                        firstVersion,
+                        partitionCapacity,
+                        tableRowUtils);
+
+        output(outputScanner,
+               patientIDsCount,
+               data_,
+               currentVersion,
+               index);
+    }
+
+    private static void output(Scanner outputScanner, int patientIDsCount, List<TableRowIntDateCols> data_, Date currentVersion, AVLTree<Date, Integer, TableRowIntDateCols> index) throws Exception {
+        String out="";
+        // Print the dataset
+        for (TableRowIntDateCols row : data_) {
             System.out.println(row.col1 + ", " + row.col2);
         }
 
         // Insert the dataset
-        for (TableRowIntDateCols row: data_) {
+        for (TableRowIntDateCols row : data_) {
             System.out.println(row.col1 + " | " + row.col2);
             // if new version immediately commit previous one
             if (!currentVersion.equals(row.col2)) {
@@ -635,11 +739,31 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
         }
 
         // Delete
+        int delKey;
         Random random = new Random();
-        TableRowIntDateCols del_row = index.delete(random.nextInt(patientIDsCount) + 1);
+        TableRowIntDateCols del_row = null;
+
+        while (true) {
+            try {
+                out = promptUser(outputScanner, "what key to delete");
+                delKey = Integer.parseInt(out);
+                del_row = index.delete(delKey);
+
+            } catch (RuntimeException e) {
+                if(out.equals("skip")){
+                    del_row = index.delete(random.nextInt(patientIDsCount) + 1);
+                    break;
+                }
+                else {
+                    System.err.println("command not valid.");
+                }
+
+            }
+            break;
+        }
+
         System.out.println(del_row);
         System.out.println(index);
-
 
         // Randomly update 20% of the shuffled rows
 //        int totalRowsToUpdate = (int) (data_.size() * 0.2);
@@ -658,82 +782,18 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
 //        }
     }
 
-    public static void demoUserInput() throws Exception{
-
-        int partitionCapacity = 1;
-
-        int patientIDsCount = 8;            // number of patients being generated
-        int patientIDsPerDayCount = 8;
-        int datesCount = 1;                 // number of days
-        int firstPatientID = 1;             // indexing patient IDs
-
-        List<Date> sequentialDates = TableRowUtils.genVersions(datesCount);
-        // gen keys
-        ArrayList<Integer> patientIDs =
-                IntegerClassUtils.genSortedNums(
-                        firstPatientID,
-                        1,
-                        patientIDsCount);
-
-        ToweredTypeUtils<Integer, TableRowIntDateCols> tableRowUtils =
-                TableRowUtils.getUtils();
-
-        List<TableRowIntDateCols> data_ =
-                TableRowUtils.getTableRowIntDateCols(
-                        sequentialDates,
-                        patientIDs,
-                        patientIDsPerDayCount,
-                        tableRowUtils);
-
-        List<Date> versions = TableRowUtils.getColumns(data_);
-
-        /*
-         * versions
-         * data_
-         * tableRowUtils
-         */
-
-        Date firstVersion = versions.get(0);
-        Date currentVersion = firstVersion;
-
-
-        AVLTree<Date, Integer, TableRowIntDateCols> index =
-                new AVLTree<>(
-                        firstVersion,
-                        partitionCapacity,
-                        tableRowUtils);
-
-        // Print the synthetic dataset
-        for (TableRowIntDateCols row: data_) {
-            System.out.println(row.col1 + ", " + row.col2);
-        }
-
-        // Insert the dataset
-        for (TableRowIntDateCols row: data_) {
-            System.out.println(row.col1 + " | " + row.col2);
-            // if new version immediately commit previous one
-            if (!currentVersion.equals(row.col2)) {
-                currentVersion = row.col2;
-                index.commitCurrentVersion(currentVersion);
-            }
-            index.upsert(row);
-
-            // Print the tree
-            System.out.println(index);
-
-        }
-
-        // Delete
-        Random random = new Random();
-        TableRowIntDateCols del_row = index.delete(random.nextInt(patientIDsCount) + 1);
-        System.out.println(del_row);
-        System.out.println(index);
-    }
-
     // demo tests
     public static void main(String[] args) throws Exception {
-//        demoRandomSamples();
-        demoUserInput();
+        Scanner s = new Scanner(System.in);
+//        demoRandomSamples(s);
+
+        demoInput(s,s);
+    }
+
+    private static String promptUser(Scanner scanner, String prompt){
+        System.out.println("type \"skip\" to skip this step.");
+        System.out.print("input" + prompt + ": ");
+        return scanner.nextLine();
     }
 
 }
