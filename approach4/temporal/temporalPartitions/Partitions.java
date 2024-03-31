@@ -174,6 +174,15 @@ public class Partitions<K extends Comparable<K>, T extends IRowDetails<K,T,V> , 
 //        return posRes;
 //    }
 
+    /**
+     * this is for finding a range of versions in the bucket DS
+     *
+     * @param verStart
+     * @param verEnd
+     * @param foundRows
+     * TODO: we don't need to use IRowDetails type here, we can use Object 's type.
+     * @throws Exception
+     */
     public void
     search(V verStart, V verEnd, ArrayList<IRowDetails<K,T,V>> foundRows) throws Exception {
 //        Utils.assertTrue(verStart.compareTo(verEnd) <= 0);

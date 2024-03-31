@@ -79,31 +79,84 @@ public class XAVLTree implements IIndexMVIntDate {
 
     @Override
     public void update(TableRowIntDateCols row) throws Exception {
-        // update no code
+        this.avlTree.upsert(row);
     }
 
-    public void rangeSearchTraversal(
-            Node<Date, Integer, TableRowIntDateCols> head,
+    /**
+     * multi version single key query
+     * @param node
+     * @param verStart
+     * @param verEnd
+     * @param key
+     * @param outputRows
+     * @throws Exception
+     */
+    public void mvskSearchTraversal(
+            Node<Date, Integer, TableRowIntDateCols> node,
+            Date verStart,
+            Date verEnd,
+            Integer key,
+            ArrayList<IRowDetails<Integer, TableRowIntDateCols, Date>> outputRows)
+                throws Exception {
+
+        if (node==null) return;
+
+        if (node.key > key) {
+            mvskSearchTraversal(node.rightChild, verStart, verEnd, key, outputRows);
+            return;
+        }
+
+        if (node.key < key){
+            mvskSearchTraversal(node.leftChild, verStart, verEnd, key, outputRows);
+            return;
+        }
+
+        // We found the key.
+        // find the versions
+        node.value.search(verStart, verEnd, outputRows);
+
+    }
+
+    /**
+     * single version ranged key query
+     * @param node
+     * @param version
+     * @param keyStart
+     * @param keyEnd
+     * @param outputRows
+     * @throws Exception
+     */
+    public void svrkSearchTraversal(
+            Node<Date, Integer, TableRowIntDateCols> node,
             Date version,
             Integer keyStart,
             Integer keyEnd,
             ArrayList<IRowDetails<Integer, TableRowIntDateCols, Date>> outputRows)
                 throws Exception{
 
+        if(node==null) return;
         // if there are outside the keyrange, ignore these nodes.
-        if(head.key > keyEnd) return;
-        if(head.key < keyStart) return;
+
+        if(node.key > keyEnd) {
+            svrkSearchTraversal(node.rightChild, version, keyStart, keyEnd, outputRows);
+            return;
+        }
+
+        else if(node.key < keyStart) {
+            svrkSearchTraversal(node.leftChild, version, keyStart, keyEnd, outputRows);
+            return;
+        }
 
         // if within the range or equal. find the version and expand further.
-
-        IRowDetails<Integer, TableRowIntDateCols, Date> row = head.value.search(version);
+        IRowDetails<Integer, TableRowIntDateCols, Date> row = node.value.search(version);
         // only add if the key is relevant to the specified version.
         if (row!=null) outputRows.add(row);
         // expand leftchild
-        rangeSearchTraversal(head.leftChild, version, keyStart, keyEnd, outputRows);
+        svrkSearchTraversal(node.leftChild, version, keyStart, keyEnd, outputRows);
 
         // expand rightchild
-        rangeSearchTraversal(head.rightChild, version, keyStart, keyEnd, outputRows);
+        svrkSearchTraversal(node.rightChild, version, keyStart, keyEnd, outputRows);
+
 
     }
     @Override
@@ -117,7 +170,7 @@ public class XAVLTree implements IIndexMVIntDate {
         Node<Date, Integer, TableRowIntDateCols> head = avlTree.getHead();
 
         // start an iteration
-        rangeSearchTraversal(head, version, keyStart, keyEnd, outputRows);
+        svrkSearchTraversal(head, version, keyStart, keyEnd, outputRows);
     }
 
     @Override
@@ -127,7 +180,7 @@ public class XAVLTree implements IIndexMVIntDate {
             Integer keyEnd,
             List<Object> outputRows)
                 throws Exception {
-
+        System.err.println("why");
     }
 
     @Override
@@ -138,7 +191,10 @@ public class XAVLTree implements IIndexMVIntDate {
             ArrayList<IRowDetails<Integer, TableRowIntDateCols, Date>> outputRows)
                 throws Exception {
 
+        Node<Date, Integer, TableRowIntDateCols> head = avlTree.getHead();
 
+        // start an iteration
+        mvskSearchTraversal(head, verStart, verEnd, key, outputRows);
 
     }
 
@@ -148,18 +204,31 @@ public class XAVLTree implements IIndexMVIntDate {
             Date verEnd,
             Integer key,
             List<Object> outputRows)
+                                throws Exception {
+        System.err.println("why");
+    }
+
+    @Override
+    public void rangeSearch3(
+            Date verStart,
+            Date verEnd,
+            Integer keyStart,
+            Integer keyEnd,
+            ArrayList<IRowDetails<Integer, TableRowIntDateCols, Date>> rows)
+            throws Exception {
+
+    }
+
+    @Override
+    public void rangeSearch3(
+            Date verStart,
+            Date verEnd,
+            Integer keyStart,
+            Integer keyEnd,
+            List<Object> rows)
                 throws Exception {
 
-    }
-
-    @Override
-    public void rangeSearch3(Date verStart, Date verEnd, Integer keyStart, Integer keyEnd, ArrayList<IRowDetails<Integer, TableRowIntDateCols, Date>> rows) throws Exception {
-
-    }
-
-    @Override
-    public void rangeSearch3(Date verStart, Date verEnd, Integer keyStart, Integer keyEnd, List<Object> rows) throws Exception {
-
+        System.err.println("why");
     }
 
     @Override
@@ -169,7 +238,7 @@ public class XAVLTree implements IIndexMVIntDate {
 
     @Override
     public void rangeSearch4(Date verStart, Date verEnd, List<Object> rows) throws Exception {
-
+        System.err.println("why");
     }
 
     // running the demo
