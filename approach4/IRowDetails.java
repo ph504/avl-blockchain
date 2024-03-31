@@ -13,6 +13,7 @@ import approach4.valueDataStructures.Version;
 public interface IRowDetails<K extends Comparable<K>, T, V extends Comparable<V>> {
 
     // TODO split to getValidFrom and getValidTo
+    // TODO throws exception for no good reason
     Version<V> getVersion() throws Exception;
     void initVersions() throws Exception;
     byte[] getDigest() throws Exception;

@@ -85,10 +85,15 @@ public class XAVLTree implements IIndexMVIntDate {
     /**
      * multi version single key query
      * @param node
+     * the current node that we are exploring/expanding
      * @param verStart
+     * the start version range that we are querying.
      * @param verEnd
+     * the end version range that we are querying.
      * @param key
+     * the key that we are trying to find
      * @param outputRows
+     * the output found rows
      * @throws Exception
      */
     public void mvskSearchTraversal(
@@ -204,7 +209,7 @@ public class XAVLTree implements IIndexMVIntDate {
             Date verEnd,
             Integer key,
             List<Object> outputRows)
-                                throws Exception {
+                throws Exception {
         System.err.println("why");
     }
 
@@ -215,7 +220,7 @@ public class XAVLTree implements IIndexMVIntDate {
             Integer keyStart,
             Integer keyEnd,
             ArrayList<IRowDetails<Integer, TableRowIntDateCols, Date>> rows)
-            throws Exception {
+                throws Exception {
 
     }
 
@@ -232,12 +237,20 @@ public class XAVLTree implements IIndexMVIntDate {
     }
 
     @Override
-    public void rangeSearch4(Date verStart, Date verEnd, ArrayList<IRowDetails<Integer, TableRowIntDateCols, Date>> rows) throws Exception {
+    public void rangeSearch4(
+            Date verStart,
+            Date verEnd,
+            ArrayList<IRowDetails<Integer, TableRowIntDateCols, Date>> rows)
+                throws Exception {
 
     }
 
     @Override
-    public void rangeSearch4(Date verStart, Date verEnd, List<Object> rows) throws Exception {
+    public void rangeSearch4(
+            Date verStart,
+            Date verEnd,
+            List<Object> rows)
+                throws Exception {
         System.err.println("why");
     }
 
