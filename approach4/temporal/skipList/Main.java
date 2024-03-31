@@ -471,12 +471,12 @@ public class Main {
     }
 
     public static ArrayList<Integer> generateUniqueRandomNumbers(int init, int step, int count) {
-        ArrayList<Integer> list = generateSortedNumbers(init, step, count);
+        ArrayList<Integer> list = genSortedNums(init, step, count);
         Collections.shuffle(list);
         return list;
     }
 
-    private static ArrayList<Integer> generateSortedNumbers(int init, int step, int count) {
+    private static ArrayList<Integer> genSortedNums(int init, int step, int count) {
         ArrayList<Integer> list = new ArrayList<>();
         int cur = init;
         for (int i = 0; i< count; i++) {
@@ -497,9 +497,9 @@ public class Main {
         // all this could be given in where it's needed, do we need the same object to pass on over and over again?
         // @see
         ITypeUtils<Integer> integerClassUtils = new IntegerClassUtils();
-        ITypeUtils<TableRowIntDateCols> tableRowIntDateColsClassUtils = new TableRowIntDateColsClassUtils();
+        ITypeUtils<TableRowIntDateCols> TableRowUtils = new TableRowUtils();
 
-        return new ToweredTypeUtils<>(integerClassUtils, tableRowIntDateColsClassUtils);
+        return new ToweredTypeUtils<>(integerClassUtils, TableRowUtils);
     }
 
     private static ToweredTypeUtils<String, TableRowStrLongCols> getTableStrLongColsIndexTypeUtils() {
@@ -1930,7 +1930,7 @@ public class Main {
             datesCount--;
         }
 
-        ArrayList<Integer> patientIDs = generateSortedNumbers(firstPatientID, 1, patientIDsSize);
+        ArrayList<Integer> patientIDs = genSortedNums(firstPatientID, 1, patientIDsSize);
 
         for (Date date : sequentialDates) {
             Collections.shuffle(patientIDs);

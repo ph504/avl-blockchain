@@ -6,7 +6,7 @@ import approach4.temporal.skipList.ToweredTypeUtils;
 import approach4.temporal.temporalPartitions.Partitions;
 import approach4.Utils;
 import approach4.typeUtils.IntegerClassUtils;
-import approach4.typeUtils.TableRowIntDateColsClassUtils;
+import approach4.typeUtils.TableRowUtils;
 import approach4.valueDataStructures.TableRowIntDateCols;
 
 import java.time.LocalDate;
@@ -48,7 +48,7 @@ public class Node<KVER extends Comparable<KVER>,K extends Comparable<K>, V exten
         this.height = 1;
     }
 
-    private static ArrayList<Integer> generateSortedNumbers(int init, int step, int count) {
+    private static ArrayList<Integer> genSortedNums(int init, int step, int count) {
         ArrayList<Integer> list = new ArrayList<>();
         int cur = init;
         for (int i = 0; i< count; i++) {
@@ -131,7 +131,7 @@ public class Node<KVER extends Comparable<KVER>,K extends Comparable<K>, V exten
             datesCount--;
         }
 
-        ArrayList<Integer> patientIDs = generateSortedNumbers(firstPatientID, 1, patientIDsSize);
+        ArrayList<Integer> patientIDs = genSortedNums(firstPatientID, 1, patientIDsSize);
 
         // Generate data
         ArrayList<TupleTwo<Integer, Date>> data = new ArrayList<>();
@@ -147,13 +147,13 @@ public class Node<KVER extends Comparable<KVER>,K extends Comparable<K>, V exten
         for (TupleTwo<Integer, Date> row : data) {
             versions_.add(row.second);
         }
-        List<Date> versions = versions_.stream().sorted(Comparator.comparing(o -> o)).collect(Collectors.toList());
+        List<Date> versions = TableRowUtils.getColumns(data);
 
 
         ITypeUtils<Integer> integerClassUtils = new IntegerClassUtils();
-        ITypeUtils<TableRowIntDateCols> tableRowIntDateColsClassUtils = new TableRowIntDateColsClassUtils();
-        ToweredTypeUtils<Integer, TableRowIntDateCols> tableIntDateColsIndexTypeUtils = new ToweredTypeUtils<>(integerClassUtils, tableRowIntDateColsClassUtils);
-        ToweredTypeUtils<Integer, TableRowIntDateCols> toweredTypeUtils = new ToweredTypeUtils<>(integerClassUtils, tableRowIntDateColsClassUtils);
+        ITypeUtils<TableRowIntDateCols> TableRowUtils = new TableRowUtils();
+        ToweredTypeUtils<Integer, TableRowIntDateCols> tableIntDateColsIndexTypeUtils = new ToweredTypeUtils<>(integerClassUtils, TableRowUtils);
+        ToweredTypeUtils<Integer, TableRowIntDateCols> toweredTypeUtils = new ToweredTypeUtils<>(integerClassUtils, TableRowUtils);
 
 
         // Convert data to type data_

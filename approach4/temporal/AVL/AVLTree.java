@@ -5,15 +5,19 @@ import approach4.TupleTwo;
 import approach4.Utils;
 import approach4.temporal.skipList.ToweredTypeUtils;
 import approach4.typeUtils.IntegerClassUtils;
-import approach4.typeUtils.TableRowIntDateColsClassUtils;
+import approach4.typeUtils.TableRowUtils;
+import approach4.typeUtils.TableRowUtils.*;
 import approach4.valueDataStructures.TableRowIntDateCols;
 import approach4.valueDataStructures.Version;
 
+import java.security.Key;
 import java.time.LocalDate;
 import java.time.Month;
 import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import org.json4s.*;
 
 /**
  * logic: BST search,
@@ -559,82 +563,56 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
         return content.toString();
     }
 
+//    public static AVLTree<VersionType, KeyType, BucketRowType> jsonToAVLTree(String filePath){
+//        AVLTree<VersionType, KeyType>
+//        return tree;
+//    }
 
-    // TODO: Remove
-    public static ArrayList<Integer> generateSortedNumbers(int init, int step, int count) {
-        // equivalent to range list in python.
-        ArrayList<Integer> list = new ArrayList<>();
-        int cur = init;
-        for (int i = 0; i< count; i++) {
-            list.add(cur);
-            cur += step;
-        }
-        return list;
-    }
 
-    // demo tests
-    public static void main(String[] args) throws Exception {
+    public static void demoRandomSamples() throws Exception{
 
-        // number of patients being generated
-        int patientIDsCount = 8;
+        int partitionCapacity = 1;
 
-        // 
+        int patientIDsCount = 8;            // number of patients being generated
         int patientIDsPerDayCount = 8;
+        int datesCount = 1;                 // number of days
+        int firstPatientID = 1;             // indexing patient IDs
 
-        // number of days
-        int datesCount = 1;
+        List<Date> sequentialDates = TableRowUtils.genVersions(datesCount);
+        // gen keys
+        ArrayList<Integer> patientIDs =
+                IntegerClassUtils.genSortedNums(
+                        firstPatientID,
+                        1,
+                        patientIDsCount);
 
-        // indexing patient IDs
-        int firstPatientID = 1;
-        
-        LocalDate startLocalDate = LocalDate.of(2024, Month.MARCH, 10);
-        LocalDate currentLocalDate = startLocalDate;
-        ZoneId defaultZoneId = ZoneId.systemDefault();
-        
-        // Dates starting from 2015 until datesCount goes to zero
-        ArrayList<Date> sequentialDates = new ArrayList<>(); 
+        ToweredTypeUtils<Integer, TableRowIntDateCols> tableRowUtils =
+                TableRowUtils.getUtils();
 
-        while (datesCount > 0) {
-            Date currentDate = Date.from(currentLocalDate.atStartOfDay(defaultZoneId).toInstant());
-            sequentialDates.add(currentDate);
-            currentLocalDate = currentLocalDate.plusDays(1);
-            datesCount--;
-        }
+        List<TableRowIntDateCols> data_ =
+                TableRowUtils.getTableRowIntDateCols(
+                        sequentialDates,
+                        patientIDs,
+                        patientIDsPerDayCount,
+                        tableRowUtils);
 
-        ArrayList<Integer> patientIDs = generateSortedNumbers(firstPatientID, 1, patientIDsCount);
+        List<Date> versions = TableRowUtils.getColumns(data_);
 
-        // Generate data
-        ArrayList<TupleTwo<Integer, Date>> data = new ArrayList<>();
-        for (Date date : sequentialDates) {
-            Collections.shuffle(patientIDs);
-            for (int i=0; i<patientIDsPerDayCount; i++) {
-                data.add(new TupleTwo<>(patientIDs.get(i), date));
-            }
-        }
-
-        ITypeUtils<Integer> integerClassUtils = new IntegerClassUtils();
-        ITypeUtils<TableRowIntDateCols> tableRowIntDateColsClassUtils = new TableRowIntDateColsClassUtils();
-        ToweredTypeUtils<Integer, TableRowIntDateCols> tableIntDateColsIndexTypeUtils = new ToweredTypeUtils<>(integerClassUtils, tableRowIntDateColsClassUtils);
-
-        // Convert data to type data_
-        // which just contains the utils type extra to data.
-        List<TableRowIntDateCols> data_ = new ArrayList<>(data.size());
-        for (TupleTwo<Integer, Date> row : data) {
-            TableRowIntDateCols tr = new TableRowIntDateCols(row.first, row.second, tableIntDateColsIndexTypeUtils.vTypeUtils);
-            data_.add(tr);
-        }
-
-        // Get list of versions only
-        HashSet<Date> versions_ = new HashSet<>();
-        for (TupleTwo<Integer, Date> row : data) {
-            versions_.add(row.second);
-        }
-        List<Date> versions = versions_.stream().sorted(Comparator.comparing(o -> o)).collect(Collectors.toList());
+        /*
+        * versions
+        * data_
+        * tableRowUtils
+         */
 
         Date firstVersion = versions.get(0);
         Date currentVersion = firstVersion;
 
-        AVLTree<Date, Integer, TableRowIntDateCols> index = new AVLTree<>(firstVersion, 1, tableIntDateColsIndexTypeUtils);
+
+        AVLTree<Date, Integer, TableRowIntDateCols> index =
+                new AVLTree<>(
+                        firstVersion,
+                        partitionCapacity,
+                        tableRowUtils);
 
         // Print the synthetic dataset
         for (TableRowIntDateCols row: data_) {
@@ -679,4 +657,83 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
 //            index.update_insert(updateRow);
 //        }
     }
+
+    public static void demoUserInput() throws Exception{
+
+        int partitionCapacity = 1;
+
+        int patientIDsCount = 8;            // number of patients being generated
+        int patientIDsPerDayCount = 8;
+        int datesCount = 1;                 // number of days
+        int firstPatientID = 1;             // indexing patient IDs
+
+        List<Date> sequentialDates = TableRowUtils.genVersions(datesCount);
+        // gen keys
+        ArrayList<Integer> patientIDs =
+                IntegerClassUtils.genSortedNums(
+                        firstPatientID,
+                        1,
+                        patientIDsCount);
+
+        ToweredTypeUtils<Integer, TableRowIntDateCols> tableRowUtils =
+                TableRowUtils.getUtils();
+
+        List<TableRowIntDateCols> data_ =
+                TableRowUtils.getTableRowIntDateCols(
+                        sequentialDates,
+                        patientIDs,
+                        patientIDsPerDayCount,
+                        tableRowUtils);
+
+        List<Date> versions = TableRowUtils.getColumns(data_);
+
+        /*
+         * versions
+         * data_
+         * tableRowUtils
+         */
+
+        Date firstVersion = versions.get(0);
+        Date currentVersion = firstVersion;
+
+
+        AVLTree<Date, Integer, TableRowIntDateCols> index =
+                new AVLTree<>(
+                        firstVersion,
+                        partitionCapacity,
+                        tableRowUtils);
+
+        // Print the synthetic dataset
+        for (TableRowIntDateCols row: data_) {
+            System.out.println(row.col1 + ", " + row.col2);
+        }
+
+        // Insert the dataset
+        for (TableRowIntDateCols row: data_) {
+            System.out.println(row.col1 + " | " + row.col2);
+            // if new version immediately commit previous one
+            if (!currentVersion.equals(row.col2)) {
+                currentVersion = row.col2;
+                index.commitCurrentVersion(currentVersion);
+            }
+            index.upsert(row);
+
+            // Print the tree
+            System.out.println(index);
+
+        }
+
+        // Delete
+        Random random = new Random();
+        TableRowIntDateCols del_row = index.delete(random.nextInt(patientIDsCount) + 1);
+        System.out.println(del_row);
+        System.out.println(index);
+    }
+
+    // demo tests
+    public static void main(String[] args) throws Exception {
+//        demoRandomSamples();
+        demoUserInput();
+    }
+
 }
