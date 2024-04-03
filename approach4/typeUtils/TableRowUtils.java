@@ -148,6 +148,49 @@ public class TableRowUtils implements ITypeUtils<TableRowIntDateCols> {
         return sequentialDates;
     }
 
+    public static ArrayList<Date> genVersions(int datesCount, LocalDate startLocalDate) {
+        LocalDate currentLocalDate = startLocalDate;
+        ZoneId defaultZoneId = ZoneId.systemDefault();
+
+        // Dates starting from 2015 until datesCount goes to zero
+        ArrayList<Date> sequentialDates = new ArrayList<>();
+
+        while (datesCount > 0) {
+            Date currentDate = Date.from(currentLocalDate.atStartOfDay(defaultZoneId).toInstant());
+            sequentialDates.add(currentDate);
+            currentLocalDate = currentLocalDate.plusDays(1);
+            datesCount--;
+        }
+        return sequentialDates;
+    }
+
+    public static Date getRandomVersion(List<Date> versions, long seed) {
+        // Check if the list is not empty
+        if (versions.isEmpty()) {
+            throw new IllegalArgumentException("The list is empty");
+        }
+
+        // Generate a random index within the bounds of the list size
+        Random random = new Random(seed);
+        int randomIndex = random.nextInt(versions.size());
+
+        // Return the Date object at the random index
+        return versions.get(randomIndex);
+    }
+
+    public static Date getRandomVersion(List<Date> versions) {
+        // Check if the list is not empty
+        if (versions.isEmpty()) {
+            throw new IllegalArgumentException("The list is empty");
+        }
+        // Generate a random index within the bounds of the list size
+        Random random = new Random();
+        int randomIndex = random.nextInt(versions.size());
+
+        // Return the Date object at the random index
+        return versions.get(randomIndex);
+    }
+
     @Override
     public TableRowIntDateCols clone(TableRowIntDateCols obj) {
         return obj;

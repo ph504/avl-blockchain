@@ -30,7 +30,6 @@ import org.json4s.*;
 public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends Comparable<KeyType>,BucketRowType extends IRowDetails<KeyType,BucketRowType,VersionType>> {
     private final int partitionCapacity;
     private VersionType currentVersion;
-    //    private final double iterationProbability;
 
      private Node<VersionType,KeyType,BucketRowType> head;
 

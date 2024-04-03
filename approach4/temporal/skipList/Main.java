@@ -1058,7 +1058,6 @@ public class Main {
             // AVL Index Code
             index = new XAVLTree(
                     firstVersion,
-                    iterationProbability,           // iterationProbability=0.5 here
                     versionsToKeysIndex,            // the DS for mapping
                     partitionCapacity,              // partitionCapacity=0 here.
                     tableIntDateColsIndexTypeUtils

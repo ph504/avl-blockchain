@@ -5,7 +5,10 @@ import approach4.Utils;
 import approach4.temporal.AVL.AVLTree;
 import approach4.temporal.AVL.Node;
 import approach4.temporal.VersionToKey.IVersionsToKeysIndex;
+import approach4.temporal.VersionToKey.VersionsToKeysIndex;
 import approach4.temporal.skipList.ToweredTypeUtils;
+import approach4.typeUtils.IntegerClassUtils;
+import approach4.typeUtils.TableRowUtils;
 import approach4.valueDataStructures.TableRowIntDateCols;
 
 import java.util.ArrayList;
@@ -38,7 +41,12 @@ public class XAVLTree implements IIndexMVIntDate {
     * @param: init version
     * @param: versionsToKeysIndex
     * @param: partitionCapacity */
-    public XAVLTree(Date initVersion, double iterationProbability, IVersionsToKeysIndex<Date,Integer> versionsToKeysIndex, int partitionCapacity, ToweredTypeUtils<Integer,TableRowIntDateCols> toweredTypeUtils) throws Exception {
+    public XAVLTree(
+            Date initVersion,
+            IVersionsToKeysIndex<Date,Integer> versionsToKeysIndex,
+            int partitionCapacity,
+            ToweredTypeUtils<Integer,TableRowIntDateCols> toweredTypeUtils)
+                throws Exception {
         // set initial version
         // (meaning the first ever version inserted?
         // I guess, like version 0 (default version in the beginning)).
@@ -317,8 +325,60 @@ public class XAVLTree implements IIndexMVIntDate {
     }
 
     // running the demo
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
+        int partitionCapacity = 1;          // partitioning the DS within the table that stores versions
+        // entails how many blocks within a partition
 
-//        XAVLTree.search1()
+        int patientIDsCount = 8;            // number of patients being generated
+        int patientIDsPerDayCount = 8;
+        int datesCount = 1;                 // number of days
+        int firstPatientID = 1;             // indexing patient IDs
+
+        List<Date> versions = TableRowUtils.genVersions(datesCount);
+        // gen keys
+        ArrayList<Integer> patientIDs =
+                IntegerClassUtils.genSortedNums(
+                        firstPatientID,
+                        1,
+                        patientIDsCount);
+
+        ToweredTypeUtils<Integer, TableRowIntDateCols> tableRowUtils =
+                TableRowUtils.getUtils();
+
+        List<TableRowIntDateCols> data_ =
+                TableRowUtils.getTableRowIntDateCols(
+                        versions,
+                        patientIDs,
+                        patientIDsPerDayCount,
+                        tableRowUtils);
+
+        /*
+         * versions
+         * data_
+         * tableRowUtils
+         */
+
+        Date firstVersion = versions.get(0);
+        Date currentVersion = firstVersion;
+
+
+        AVLTree<Date, Integer, TableRowIntDateCols> index =
+                new AVLTree<>(
+                        firstVersion,
+                        partitionCapacity,
+                        tableRowUtils);
+
+        IVersionsToKeysIndex<Date,Integer> versionsToKeysIndex = new VersionsToKeysIndex(firstVersion, patientIDsCount);
+        XAVLTree xtree = new XAVLTree(firstVersion, versionsToKeysIndex, partitionCapacity, tableRowUtils);
+
+        // version range query
+        Date verStart = TableRowUtils.getRandomVersion(versions);   // start of the range
+        Date verEnd = TableRowUtils.getRandomVersion(versions);     // end of the range
+
+
+//        xtree.rangeSearch1();
+//        xtree.rangeSearch2();
+//        xtree.rangeSearch3();
+//        xtree.rangeSearch4();
     }
 }
