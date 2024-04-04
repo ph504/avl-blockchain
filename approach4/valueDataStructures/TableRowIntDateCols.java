@@ -17,11 +17,13 @@ import java.util.stream.Collectors;
  * seems that it just wanted to use the col1 and col2 of that DS.
  */
 public class TableRowIntDateCols implements IRowDetails<Integer, TableRowIntDateCols, Date> {
+    // version valid from and to
     private Version<Date> version;
     private byte[] digest;
 
-    // the key i think
+    // the key
     public final int col1;
+    // the current version
     public final Date col2;
 
     // if you found out what this class/object does let me know. IHNFI
@@ -82,10 +84,10 @@ public class TableRowIntDateCols implements IRowDetails<Integer, TableRowIntDate
 
     @Override
     public String toString() {
-        return  version.toString() +
+//        return  version.toString() +
 //                ", digest=" + Arrays.toString(digest) +
-                ", key=" + col1 +
-                ", col2=" + col2 ;
+                 return "\n\tkey=" + col1+
+                ",\n\tcol2=" + col2 ;
 //                ", tableRowOneIntColClassUtils=" + tableRowOneIntColClassUtils;
     }
 }
