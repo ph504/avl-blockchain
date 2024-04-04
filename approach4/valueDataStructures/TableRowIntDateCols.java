@@ -82,10 +82,10 @@ public class TableRowIntDateCols implements IRowDetails<Integer, TableRowIntDate
 
     @Override
     public String toString() {
-        return  "version=" + version +
-                ", digest=" + Arrays.toString(digest) +
-                ", col1=" + col1 +
-                ", col2=" + col2 +
-                ", tableRowOneIntColClassUtils=" + tableRowOneIntColClassUtils;
+        return  version.toString() +
+//                ", digest=" + Arrays.toString(digest) +
+                ", key=" + col1 +
+                ", col2=" + col2 ;
+//                ", tableRowOneIntColClassUtils=" + tableRowOneIntColClassUtils;
     }
 }

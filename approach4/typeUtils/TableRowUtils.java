@@ -191,6 +191,13 @@ public class TableRowUtils implements ITypeUtils<TableRowIntDateCols> {
         return versions.get(randomIndex);
     }
 
+    // Function to ensure that the end version is greater than the start version
+    private static Date getRandomEndVersion(Date startVersion, List<Date> versions) {
+        Random random = new Random();
+        int index = random.nextInt(versions.indexOf(startVersion) + 1);
+        return versions.get(index);
+    }
+
     @Override
     public TableRowIntDateCols clone(TableRowIntDateCols obj) {
         return obj;

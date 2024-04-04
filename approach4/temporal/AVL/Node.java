@@ -79,12 +79,12 @@ public class Node<KVER extends Comparable<KVER>,K extends Comparable<K>, V exten
         } else {
             sb.append("null");
         }
-        System.out.println(sb);
+//        System.out.println(sb);
 
         for (byte b : this.digest) {
-            System.out.printf("%02X ", b);
+//            System.out.printf("%02X ", b);
         }
-        System.out.println();
+//        System.out.println();
     }
 
     public static <KVER extends Comparable<KVER>,K extends Comparable<K>,V extends IRowDetails<K, V, KVER>>

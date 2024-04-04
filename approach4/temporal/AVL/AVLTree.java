@@ -1,21 +1,14 @@
 package approach4.temporal.AVL;
 import approach4.IRowDetails;
-import approach4.ITypeUtils;
-import approach4.TupleTwo;
 import approach4.Utils;
 import approach4.temporal.skipList.ToweredTypeUtils;
 import approach4.typeUtils.IntegerClassUtils;
 import approach4.typeUtils.TableRowUtils;
-import approach4.typeUtils.TableRowUtils.*;
 import approach4.valueDataStructures.TableRowIntDateCols;
 import approach4.valueDataStructures.Version;
 
-import java.security.Key;
-import java.time.LocalDate;
-import java.time.Month;
-import java.time.ZoneId;
+
 import java.util.*;
-import java.util.stream.Collectors;
 
 import org.json4s.*;
 
@@ -100,7 +93,7 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
                        Node<VersionType, KeyType, BucketRowType> currentNode) throws Exception{
         if (key.compareTo(currentNode.key)<0)
             if (currentNode.leftChild == null) {
-                System.out.println("Inserting");
+//                System.out.println("Inserting");
                 // set as left child
                 currentNode.leftChild = new Node<VersionType, KeyType, BucketRowType>(this.currentVersion, row, this.partitionCapacity);
                 // set parent
@@ -113,7 +106,7 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
         
         else if (key.compareTo(currentNode.key)>0)
             if (currentNode.rightChild == null) {
-                System.out.println("Inserting" );
+//                System.out.println("Inserting" );
                 // set as right child
                 currentNode.rightChild = new Node<VersionType, KeyType, BucketRowType>(this.currentVersion, row, this.partitionCapacity);
                 // set parent
@@ -125,7 +118,7 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
             else upsert(key, row, currentNode.rightChild);
 
         else {
-            System.out.println("Updating");
+//            System.out.println("Updating");
 
             BucketRowType lastRow = currentNode.value.getLastRow();
             Version<VersionType> lastRowVersion = lastRow.getVersion();
@@ -146,7 +139,7 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
     }
 
     public BucketRowType delete(KeyType key) throws Exception {
-        System.out.println("Deleting " + key);
+//        System.out.println("Deleting " + key);
         if (this.head != null) {
             Node<VersionType, KeyType, BucketRowType> nodeToDelete = find(key, this.head);
             if (nodeToDelete != null) {
@@ -244,10 +237,10 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
         if (Math.abs(left_height - right_height) > 1) {
             Node<VersionType, KeyType, BucketRowType> y = tallerChild(curNode);
             Node<VersionType, KeyType, BucketRowType> x = tallerChild(y);
-            System.out.println("Re-balancing at trio " + curNode.key + ", " + y.key + ", " + x.key);
+//            System.out.println("Re-balancing at trio " + curNode.key + ", " + y.key + ", " + x.key);
             Node<VersionType, KeyType, BucketRowType> rebalanced_root = _rebalanceNode(curNode, y, x);
 
-            System.out.println("Rebalanced head at " + rebalanced_root.key);
+//            System.out.println("Rebalanced head at " + rebalanced_root.key);
 
             // Update digests from the rebalanced_root until the head, then exit the function
             while (rebalanced_root.parent != null) {
@@ -325,7 +318,7 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
 
         if (Math.abs(leftHeight - rightHeight) > 1) {
             path.add(0, curNode.parent);
-            System.out.println("Re-balancing at trio " + path.get(0).key + ", " + path.get(1).key + ", " + path.get(2).key);
+//            System.out.println("Re-balancing at trio " + path.get(0).key + ", " + path.get(1).key + ", " + path.get(2).key);
             Node<VersionType, KeyType, BucketRowType> rebalanced_root = _rebalanceNode(path.get(0), path.get(1), path.get(2));
 
             // Update digests of its parents
@@ -487,7 +480,7 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
     public void commitCurrentVersion(VersionType nextVersion) throws Exception {
         Utils.checkVersions(this.currentVersion, nextVersion);
         this.currentVersion = nextVersion;
-        System.out.println("Current version: " + this.currentVersion);
+//        System.out.println("Current version: " + this.currentVersion);
     }
 
     @Override
@@ -581,11 +574,17 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
 
         List<Date> sequentialDates = TableRowUtils.genVersions(datesCount);
         // gen keys
-        ArrayList<Integer> patientIDs =
-                IntegerClassUtils.genSortedNums(
-                        firstPatientID,
-                        1,
-                        patientIDsCount);
+        // equivalent to range list in python.
+        int init=firstPatientID, step=1, count = patientIDsCount;
+        ArrayList<Integer> list = new ArrayList<>();
+        int cur = init;
+        for (int i = 0; i< count; i++) {
+            list.add(cur);
+            cur += step;
+        }
+//        return list;
+        ArrayList<Integer> patientIDs = list;
+
 
         ToweredTypeUtils<Integer, TableRowIntDateCols> tableRowUtils =
                 TableRowUtils.getUtils();
@@ -678,10 +677,15 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
                 keys.add(Integer.parseInt(in));
             } catch (RuntimeException e) {
                 if(in.equals("skip")){
-                    keys = IntegerClassUtils.genSortedNums(
-                            firstPatientID,
-                            1,
-                            patientIDsCount);
+                    // equivalent to range list in python.
+                    int init = firstPatientID, step=1, count = patientIDsCount;
+                    ArrayList<Integer> list = new ArrayList<>();
+                    int cur = init;
+                    for (int i = 0; i< count; i++) {
+                        list.add(cur);
+                        cur += step;
+                    }
+                    keys = list;
                     break;
                 }
                 else if (in.equals("done")) break;
@@ -715,27 +719,14 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
                index);
     }
 
-    private static void output(Scanner outputScanner, int patientIDsCount, List<TableRowIntDateCols> data_, Date currentVersion, AVLTree<Date, Integer, TableRowIntDateCols> index) throws Exception {
+    public static void output(Scanner outputScanner, int patientIDsCount, List<TableRowIntDateCols> data_, Date currentVersion, AVLTree<Date, Integer, TableRowIntDateCols> index) throws Exception {
         String out="";
         // Print the dataset
         for (TableRowIntDateCols row : data_) {
-            System.out.println(row.col1 + ", " + row.col2);
+//            System.out.println(row.col1 + ", " + row.col2);
         }
 
-        // Insert the dataset
-        for (TableRowIntDateCols row : data_) {
-            System.out.println(row.col1 + " | " + row.col2);
-            // if new version immediately commit previous one
-            if (!currentVersion.equals(row.col2)) {
-                currentVersion = row.col2;
-                index.commitCurrentVersion(currentVersion);
-            }
-            index.upsert(row);
-
-            // Print the tree
-            System.out.println(index);
-
-        }
+        insert(data_, currentVersion, index, true);
 
         // Delete
         int delKey;
@@ -779,6 +770,27 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
 //            System.out.println("Updating: " + updateRow.col1 + " | " + updateRow.col2);
 //            index.update_insert(updateRow);
 //        }
+    }
+
+    private static void insert(
+            List<TableRowIntDateCols> data_,
+            Date currentVersion,
+            AVLTree<Date, Integer, TableRowIntDateCols> index,
+            boolean verbose)
+                throws Exception {
+        // Insert the dataset
+        for (TableRowIntDateCols row : data_) {
+            if(verbose) System.out.println(row.col1 + " | " + row.col2);
+            // if new version immediately commit previous one
+            if (!currentVersion.equals(row.col2)) {
+                currentVersion = row.col2;
+                index.commitCurrentVersion(currentVersion);
+            }
+            index.upsert(row);
+            // Print the tree
+            if(verbose) System.out.println(index);
+
+        }
     }
 
     // demo tests

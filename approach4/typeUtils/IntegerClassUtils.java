@@ -20,15 +20,5 @@ public class IntegerClassUtils implements ITypeUtils<Integer> {
     }
 
     // TODO: Remove
-    public static ArrayList<Integer> genSortedNums(int init, int step, int count) {
-        // equivalent to range list in python.
-        ArrayList<Integer> list = new ArrayList<>();
-        int cur = init;
-        for (int i = 0; i< count; i++) {
-            list.add(cur);
-            cur += step;
-        }
-        return list;
-    }
 
 }
