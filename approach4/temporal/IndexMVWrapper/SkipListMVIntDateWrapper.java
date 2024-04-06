@@ -78,7 +78,6 @@ public class SkipListMVIntDateWrapper implements IIndexMVIntDate {
 
     @Override
     public void rangeSearch1(Date version, Integer keyStart, Integer keyEnd, List<Object> rows) throws Exception {
-
     }
 
     @Override

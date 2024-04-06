@@ -385,7 +385,10 @@ public class Main {
     This function initializes a file at a given Path path by deleting it if it exists and then creating a new file with a header specified in filesMetaData under an entryName.
      */
     private static void initFile(String entryName, HashMap<String, HashMap<String, Object>> filesMetaData, Path path) throws IOException {
+//        System.out.println(path);
         Files.deleteIfExists(path);
+//        System.out.println("hello");
+
         Utils.writeToFile(path, filesMetaData.get(entryName).get("header") + System.lineSeparator(), StandardOpenOption.CREATE);
     }
 
@@ -895,6 +898,7 @@ public class Main {
         addEntry(patriciaMerkleTrie, "count,versions,keysPercent,insertLs,insertTPs,rangeSearch1SkipListLns,rangeSearch1MerkleLns,rangeSearch3SkipListLms,rangeSearch3MerkleLms,rangeSearch4SkipListLms,rangeSearch4MerkleLms", filesMetaData);
         addEntry(temporalSkipList, "count,versions,keysPercent,insertLs,insertTPs,rangeSearch1SkipListLns,rangeSearch1MerkleLns,rangeSearch3SkipListLms,rangeSearch3MerkleLms,rangeSearch4SkipListLms,rangeSearch4MerkleLms", filesMetaData);
         addEntry(temporalIndex, "count,versions,keysPercent,insertLs,insertTPs,rangeSearch1SkipListLns,rangeSearch1MerkleLns,rangeSearch3SkipListLms,rangeSearch3MerkleLms,rangeSearch4SkipListLms,rangeSearch4MerkleLms", filesMetaData);
+        addEntry(avlTreeIndex, "count,versions,keysPercent,insertLs,insertTPs,rangeSearch1SkipListLns,rangeSearch1MerkleLns,rangeSearch3SkipListLms,rangeSearch3MerkleLms,rangeSearch4SkipListLms,rangeSearch4MerkleLms", filesMetaData);
         addEntry(phTreeIndex, "count,versions,keysPercent,insertLs,insertTPs,rangeSearch1SkipListLns,rangeSearch1MerkleLns,rangeSearch3SkipListLms,rangeSearch3MerkleLms,rangeSearch4SkipListLms,rangeSearch4MerkleLms", filesMetaData);
         addEntry(merkleKDTreeIndex, "count,versions,keysPercent,insertLs,insertTPs,rangeSearch1SkipListLns,rangeSearch1MerkleLns,rangeSearch3SkipListLms,rangeSearch3MerkleLms,rangeSearch4SkipListLms,rangeSearch4MerkleLms", filesMetaData);
 
@@ -913,6 +917,9 @@ public class Main {
         ProcessRunsAvg(Paths.get(logPrefix + temporalIndex + "Scenario2" + logPostfix),
                 Paths.get(logPrefix + temporalIndex + "Scenario2" + runsAvgProcessed + logPostfix),
                 filesMetaData.get(temporalIndex), new HashSet<>(Arrays.asList(0, 1, 2)));
+        ProcessRunsAvg(Paths.get(logPrefix + avlTreeIndex + "Scenario2" + logPostfix),
+                Paths.get(logPrefix + avlTreeIndex + "Scenario2" + runsAvgProcessed + logPostfix),
+                filesMetaData.get(avlTreeIndex), new HashSet<>(Arrays.asList(0, 1, 2)));
         ProcessRunsAvg(Paths.get(logPrefix + phTreeIndex + "Scenario2" + logPostfix),
                 Paths.get(logPrefix + phTreeIndex + "Scenario2" + runsAvgProcessed + logPostfix),
                 filesMetaData.get(phTreeIndex), new HashSet<>(Arrays.asList(0, 1, 2)));
@@ -1034,6 +1041,7 @@ public class Main {
             //  V extends IRowDetails<K,V,KVER>
             // the naming convention is... we could use V for version and R for rows?
             // >
+//            System.out.println("skiplist");
             index = new SkipListMVIntDateWrapper(
                     firstVersion,
                     // the probability to build a new level
@@ -1055,6 +1063,11 @@ public class Main {
                     percent);
             writeScenarioResultsToFile(pathTempSkipListScenario, skipListIndexRunRes);
 
+            versionsToKeysIndex = new VersionsToKeysIndex<>(firstVersion, data.size());
+//            System.out.println("avl tree");
+
+            data_ = getTableRowIntDateCols(data, tableIntDateColsIndexTypeUtils);
+
             // AVL Index Code
             index = new XAVLTree(
                     firstVersion,
@@ -1071,22 +1084,22 @@ public class Main {
             writeScenarioResultsToFile(pathAVLTreeScenario, avlTreeIndexRes);
 
             index = new PHTreeIntDateWrapper();
-            Map<String, Object> phTreeIndexRunRes =
-                    SearchMVScenarios(
-                            "phTreeIndex",
-                            index,
-                            data_,
-                            percent);
-            writeScenarioResultsToFile(pathPhTreeIndexScenario, phTreeIndexRunRes);
+//            Map<String, Object> phTreeIndexRunRes =
+//                    SearchMVScenarios(
+//                            "phTreeIndex",
+//                            index,
+//                            data_,
+//                            percent);
+//            writeScenarioResultsToFile(pathPhTreeIndexScenario, phTreeIndexRunRes);
 
             index = new MerkleKDTreeIntDateWrapper();
-            Map<String, Object> merkleKDTreeIndexRunRes =
-                    SearchMVScenarios(
-                            "merkleKDTreeIndex",
-                            index,
-                            data_,
-                            percent);
-            writeScenarioResultsToFile(pathMerkleKDTreeIndexScenario, merkleKDTreeIndexRunRes);
+//            Map<String, Object> merkleKDTreeIndexRunRes =
+//                    SearchMVScenarios(
+//                            "merkleKDTreeIndex",
+//                            index,
+//                            data_,
+//                            percent);
+//            writeScenarioResultsToFile(pathMerkleKDTreeIndexScenario, merkleKDTreeIndexRunRes);
 
 
 
@@ -1167,6 +1180,7 @@ public class Main {
 
     public static Map<String, Object> SearchMVScenarios(String indexName, IIndexMVIntDate index, List<TableRowIntDateCols> data, double percent) throws Exception {
         System.out.println(indexName);
+        System.out.println("---------------------------------------\n"+index);
 
         MyTimer myTimer = new MyTimer();
 
@@ -1189,6 +1203,7 @@ public class Main {
         Date currentVersion = firstVersion;
 
         int keysArrFractionCount = (int) (keys.size()*percent);
+
         int versionsFractionCount = (int) Math.max(1, versions.size()*percent);
 
         System.out.println(indexName + " insert-commit start");
@@ -1200,6 +1215,7 @@ public class Main {
                 index.commitCurrentVersion(currentVersion);
             }
             index.insert(row);
+            System.out.println("\n"+index);
         }
 
         index.finalizeInsert();
@@ -1209,10 +1225,10 @@ public class Main {
         double insertTPs = ((double) (data.size())) / ((double) insertLs);
         System.out.println(indexName + " insert-commit time (s): " + insertLs);
 
-
         List<Integer> keysArrFirstFractionSortedElements = keys.stream().sorted().limit(keysArrFractionCount).collect(Collectors.toList());
         Integer keyStart = keysArrFirstFractionSortedElements.get(0);
         Integer keyEnd = keysArrFirstFractionSortedElements.get(keysArrFirstFractionSortedElements.size() - 1);
+        System.out.println("---------------------------------------\n"+index);
 
         System.out.println(indexName + " rangeSearch1 start");
         ArrayList<IRowDetails<Integer, TableRowIntDateCols,Date>> slr = new ArrayList<>(keys.size());

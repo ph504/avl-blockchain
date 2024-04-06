@@ -1107,7 +1107,7 @@ public class Main {
     }
 
     public static Map<String, Object> SearchMVScenarios(String indexName, IIndexMVIntDate index, List<TableRowIntDateCols> data, double percent) throws Exception {
-        System.out.println(indexName);
+//        System.out.println(indexName);
 
         MyTimer myTimer = new MyTimer();
 
@@ -1132,7 +1132,7 @@ public class Main {
         int keysArrFractionCount = (int) (keys.size()*percent);
         int versionsFractionCount = (int) Math.max(1, versions.size()*percent);
 
-        System.out.println(indexName + " insert-commit start");
+//        System.out.println(indexName + " insert-commit start");
         myTimer.start();
 
         for (TableRowIntDateCols row : data) {
@@ -1148,14 +1148,14 @@ public class Main {
         myTimer.pause();
         double insertLs = myTimer.getElapsedSeconds();
         double insertTPs = ((double) (data.size())) / ((double) insertLs);
-        System.out.println(indexName + " insert-commit time (s): " + insertLs);
+//        System.out.println(indexName + " insert-commit time (s): " + insertLs);
 
 
        List<Integer> keysArrFirstFractionSortedElements = keys.stream().sorted().limit(keysArrFractionCount).collect(Collectors.toList());
         Integer keyStart = keysArrFirstFractionSortedElements.get(0);
         Integer keyEnd = keysArrFirstFractionSortedElements.get(keysArrFirstFractionSortedElements.size() - 1);
 
-        System.out.println(indexName + " rangeSearch1 start");
+//        System.out.println(indexName + " rangeSearch1 start");
         ArrayList<IRowDetails<Integer, TableRowIntDateCols,Date>> slr = new ArrayList<>(keys.size());
         myTimer.init();
         myTimer.start();
@@ -1163,9 +1163,9 @@ public class Main {
         myTimer.pause();
         double rangeSearch1SkipListLns = myTimer.getElapsedNanoSeconds();
         slr.clear();
-        System.out.println(indexName + " rangeSearch1 time (ns): " + rangeSearch1SkipListLns);
+//        System.out.println(indexName + " rangeSearch1 time (ns): " + rangeSearch1SkipListLns);
 
-        System.out.println(indexName + " rangeSearch1 start");
+//        System.out.println(indexName + " rangeSearch1 start");
         ArrayList<Object> mr = new ArrayList<>(keys.size());
         myTimer.init();
         myTimer.start();
@@ -1173,48 +1173,48 @@ public class Main {
         myTimer.pause();
         double rangeSearch1MerkleLns = myTimer.getElapsedNanoSeconds();
         mr.clear();
-        System.out.println(indexName + " rangeSearch1 time (ns): " + rangeSearch1MerkleLns);
+//        System.out.println(indexName + " rangeSearch1 time (ns): " + rangeSearch1MerkleLns);
 
 
         Date verEnd = versions.get(versionsFractionCount - 1);
-        System.out.println(indexName + " rangeSearch3 start");
+//        System.out.println(indexName + " rangeSearch3 start");
         myTimer.init();
         myTimer.start();
         index.rangeSearch3(firstVersion, verEnd, keyStart, keyEnd, slr);
         myTimer.pause();
         double rangeSearch3SkipListLms = myTimer.getElapsedMilliSeconds();
         slr.clear();
-        System.out.println(indexName + " rangeSearch3 time (ms): " + rangeSearch3SkipListLms);
+//        System.out.println(indexName + " rangeSearch3 time (ms): " + rangeSearch3SkipListLms);
 
-        System.out.println(indexName + " rangeSearch3 start");
+//        System.out.println(indexName + " rangeSearch3 start");
         myTimer.init();
         myTimer.start();
         index.rangeSearch3(firstVersion, verEnd, keyStart, keyEnd, mr);
         myTimer.pause();
         double rangeSearch3MerkleLms = myTimer.getElapsedMilliSeconds();
         mr.clear();
-        System.out.println(indexName + " rangeSearch3 time (ms): " + rangeSearch3MerkleLms);
+//        System.out.println(indexName + " rangeSearch3 time (ms): " + rangeSearch3MerkleLms);
 
 
         Integer firstKey = keys.get(0);
         Integer lastKey = keys.get(keys.size()-1);
-        System.out.println(indexName + " rangeSearch4 start");
+//        System.out.println(indexName + " rangeSearch4 start");
         myTimer.init();
         myTimer.start();
         index.rangeSearch4(firstVersion, verEnd, slr);
         myTimer.pause();
         double rangeSearch4SkipListLms = myTimer.getElapsedMilliSeconds();
         slr.clear();
-        System.out.println(indexName + " rangeSearch4 time (ms): " + rangeSearch4SkipListLms);
+//        System.out.println(indexName + " rangeSearch4 time (ms): " + rangeSearch4SkipListLms);
 
-        System.out.println(indexName + " rangeSearch4 start");
+//        System.out.println(indexName + " rangeSearch4 start");
         myTimer.init();
         myTimer.start();
         index.rangeSearch4(firstVersion, verEnd, mr);
         myTimer.pause();
         double rangeSearch4MerkleLms = myTimer.getElapsedMilliSeconds();
         mr.clear();
-        System.out.println(indexName + " rangeSearch4 time (ms): " + rangeSearch4MerkleLms);
+//        System.out.println(indexName + " rangeSearch4 time (ms): " + rangeSearch4MerkleLms);
 
 
         Map<String,Object> res = new HashMap<>();

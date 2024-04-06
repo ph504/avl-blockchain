@@ -71,6 +71,7 @@ public class XAVLTree implements IIndexMVIntDate {
 
     @Override
     public void insert(TableRowIntDateCols row) throws Exception {
+//        System.out.println("hello");
         this.avlTree.upsert(row);
         Integer key = row.getKey();
         this.versionsToKeysIndex.add(key);
@@ -247,7 +248,7 @@ public class XAVLTree implements IIndexMVIntDate {
             Integer keyEnd,
             List<Object> outputRows)
                 throws Exception {
-        System.err.println("why");
+
     }
 
     @Override
@@ -273,7 +274,6 @@ public class XAVLTree implements IIndexMVIntDate {
             Integer key,
             List<Object> outputRows)
                 throws Exception {
-        System.err.println("why");
     }
 
     @Override
@@ -303,7 +303,6 @@ public class XAVLTree implements IIndexMVIntDate {
             List<Object> outputRows)
                 throws Exception {
 
-        System.err.println("why");
     }
 
     @Override
@@ -330,7 +329,6 @@ public class XAVLTree implements IIndexMVIntDate {
             Date verEnd,
             List<Object> outputRows)
                 throws Exception {
-        System.err.println("why");
     }
 
     @Override
