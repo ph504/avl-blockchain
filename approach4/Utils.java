@@ -221,7 +221,7 @@ public class Utils {
     }
 
     /**
-     *
+     * check if the version is actually in ascending order (we shouldn't return in version basically, at least for committing.)
      * @param currentVersion
      * @param nextVersion
      * @param <VersionType>

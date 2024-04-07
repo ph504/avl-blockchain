@@ -1037,7 +1037,8 @@ public class Main {
                             "tableStrIntColsSkipListIndex",
                             index,
                             data_,
-                            percent);
+                            percent,
+                            false);
             writeScenarioResultsToFile(pathTempSkipListScenario, skipListIndexRunRes);
 
             versionsToKeysIndex = new VersionsToKeysIndex<>(firstVersion, data.size());
@@ -1057,26 +1058,29 @@ public class Main {
                             "tableStrIntColsSkipListIndex",
                             index,
                             data_,
-                            percent);
+                            percent,
+                            true);
             writeScenarioResultsToFile(pathAVLTreeScenario, avlTreeIndexRes);
 
             index = new PHTreeIntDateWrapper();
-//            Map<String, Object> phTreeIndexRunRes =
-//                    SearchMVScenarios(
-//                            "phTreeIndex",
-//                            index,
-//                            data_,
-//                            percent);
-//            writeScenarioResultsToFile(pathPhTreeIndexScenario, phTreeIndexRunRes);
+            Map<String, Object> phTreeIndexRunRes =
+                    SearchMVScenarios(
+                            "phTreeIndex",
+                            index,
+                            data_,
+                            percent,
+                            false);
+            writeScenarioResultsToFile(pathPhTreeIndexScenario, phTreeIndexRunRes);
 
             index = new MerkleKDTreeIntDateWrapper();
-//            Map<String, Object> merkleKDTreeIndexRunRes =
-//                    SearchMVScenarios(
-//                            "merkleKDTreeIndex",
-//                            index,
-//                            data_,
-//                            percent);
-//            writeScenarioResultsToFile(pathMerkleKDTreeIndexScenario, merkleKDTreeIndexRunRes);
+            Map<String, Object> merkleKDTreeIndexRunRes =
+                    SearchMVScenarios(
+                            "merkleKDTreeIndex",
+                            index,
+                            data_,
+                            percent,
+                            false);
+            writeScenarioResultsToFile(pathMerkleKDTreeIndexScenario, merkleKDTreeIndexRunRes);
 
 
             // TODO find scenario to strictly increasing keys only, which can use VersionsToConsecutiveKeysIndex
@@ -1128,18 +1132,23 @@ public class Main {
 
         IIndexMVIntDate index = null;
         index = new PatriciaMerkleTrieMVIntDateWrapper();
-        Map<String, Object> patriciaMerkleTrieRunRes = SearchMVScenarios("patriciaMerkleTrieIndex", index, data_, percent);
+        Map<String, Object> patriciaMerkleTrieRunRes = SearchMVScenarios("patriciaMerkleTrieIndex", index, data_, percent, false);
         writeScenarioResultsToFile(pathPatriciaMerkleTrieScenario, patriciaMerkleTrieRunRes);
 
         index = new MerkleBucketTreeMVIntDateWrapper(MBTCapacity);
-        Map<String, Object> merkleBucketIndexRunRes = SearchMVScenarios("merkleBucketTreeIndex", index, data_, percent);
+        Map<String, Object> merkleBucketIndexRunRes = SearchMVScenarios("merkleBucketTreeIndex", index, data_, percent, false);
         writeScenarioResultsToFile(pathMerkleBucketScenario, merkleBucketIndexRunRes);
 
         ToweredSkipList.MAX_LEVEL = temporalIndexCapacity;
         IVersionsToKeysIndex<Date, Integer> versionsToKeysIndex = new VersionsToKeysIndex<>(firstVersion, data.size());
         index = new SkipListMVIntDateWrapper(firstVersion, iterationProbability, versionsToKeysIndex, partitionCapacity, tableIntDateColsIndexTypeUtils);
-        Map<String, Object> skipListIndexRunRes = SearchMVScenarios("tableStrIntColsSkipListIndex", index, data_, percent);
+        Map<String, Object> skipListIndexRunRes = SearchMVScenarios("tableStrIntColsSkipListIndex", index, data_, percent, false);
         writeScenarioResultsToFile(pathTempSkipListScenario, skipListIndexRunRes);
+
+        versionsToKeysIndex = new VersionsToKeysIndex<>(firstVersion, data.size());
+        index = new XAVLTree(firstVersion, versionsToKeysIndex, partitionCapacity, tableIntDateColsIndexTypeUtils);
+        Map<String, Object> avlTreeIndexRunRes = SearchMVScenarios("tableStrIntColsSkipListIndex", index, data_, percent, false);
+        writeScenarioResultsToFile(pathTempSkipListScenario, avlTreeIndexRunRes);
 
         // TODO find scenario to strictly increasing keys only, which can use VersionsToConsecutiveKeysIndex
         changeKeysToConsecutiveKeys(data);
@@ -1148,7 +1157,7 @@ public class Main {
         ToweredSkipList.MAX_LEVEL = temporalIndexCapacity;
         VersionsToConsecutiveKeysIndex<Date, Integer> versionsToConsecutiveKeysIndex = new VersionsToConsecutiveKeysIndex<>(firstVersion, data.size());
         index = new SkipListMVIntDateWrapper(firstVersion, iterationProbability, versionsToConsecutiveKeysIndex, partitionCapacity, tableIntDateColsIndexTypeUtils);
-        Map<String, Object> tempIndexRunRes = SearchMVScenarios("tableStrIntColsTemporalIndexScenario", index, data_, percent);
+        Map<String, Object> tempIndexRunRes = SearchMVScenarios("tableStrIntColsTemporalIndexScenario", index, data_, percent, false);
         writeScenarioResultsToFile(pathTempIndexScenario, tempIndexRunRes);
     }
 
@@ -1184,7 +1193,7 @@ public class Main {
 
         int versionsFractionCount = (int) Math.max(1, versions.size() * percent);
 
-        // -------------------------------------------------------------------------------------- commit
+    // -------------------------------------------------------------------------------------- commit
         System.out.println(indexName + " insert-commit start");
         myTimer.start();
 
@@ -1209,6 +1218,7 @@ public class Main {
         Integer keyStart = keysArrFirstFractionSortedElements.get(0);
         Integer keyEnd = keysArrFirstFractionSortedElements.get(keysArrFirstFractionSortedElements.size() - 1);
 //        System.out.println("---------------------------------------\n"+index);
+    // -------------------------------------------------------------------------------------- commit
         System.out.println(indexName + " rangeSearch1 start");
         ArrayList<IRowDetails<Integer, TableRowIntDateCols, Date>> searchOutput = new ArrayList<>(keys.size());
         //slr, idk what it stood for. renamed to search output.
@@ -1220,16 +1230,8 @@ public class Main {
         searchOutput.clear();
         System.out.println(indexName + " rangeSearch1 time (ns): " + rangeSearch1SkipListLns);
         System.out.println(indexName + " rangeSearch1 end query svrk, version:" + firstVersion + " range key[" + keyStart + "," + keyEnd + "]");
-        System.out.println("---------------------------------------\n" + index);
-//        ArrayList<Object> mr = new ArrayList<>(keys.size());
-//        //mr, idk what it stands for
-//        myTimer.init();
-//        myTimer.start();
-//        index.rangeSearch1(firstVersion, keyStart, keyEnd, mr);
-//        myTimer.pause();
-//        double rangeSearch1MerkleLns = myTimer.getElapsedNanoSeconds();
-//        mr.clear();
-//        System.out.println(indexName + " rangeSearch1 time (ns): " + rangeSearch1MerkleLns);
+//        System.out.println("---------------------------------------\n" + index);
+    // -------------------------------------------------------------------------------------- commit
 
         System.out.println(indexName + " rangeSearch2 start");
         // output in searchOutput
@@ -1238,17 +1240,16 @@ public class Main {
         myTimer.start();
         Date verEnd = versions.get(versionsFractionCount - 1);
         // verStart = first version.
-        index.rangeSearch2(firstVersion, verEnd, keyStart, keyEnd, searchOutput);
+        index.rangeSearch2(firstVersion, verEnd, keyStart, searchOutput);
         myTimer.pause();
         double rangeSearch2SkipListLns = myTimer.getElapsedNanoSeconds();
-
         // clear list to use for the next search results
         searchOutput.clear();
-        System.out.println(indexName + " rangeSearch1 time (ns): " + rangeSearch2SkipListLns);
-        System.out.println(indexName + " rangeSearch1 end query svrk, version:" + firstVersion + " range key[" + keyStart + "," + keyEnd + "]");
-        System.out.println("---------------------------------------\n" + index);
+        System.out.println(indexName + " rangeSearch2 time (ns): " + rangeSearch2SkipListLns);
+        System.out.println(indexName + " rangeSearch2 end query mv, version[" + firstVersion + "," + verEnd + "]" + " range key[" + keyStart + "]");
+//        System.out.println("---------------------------------------\n" + index);
+    // -------------------------------------------------------------------------------------- commit
 
-        Date verEnd = versions.get(versionsFractionCount - 1);
         System.out.println(indexName + " rangeSearch3 start");
         myTimer.init();
         myTimer.start();
@@ -1257,37 +1258,21 @@ public class Main {
         double rangeSearch3SkipListLms = myTimer.getElapsedMilliSeconds();
         searchOutput.clear();
         System.out.println(indexName + " rangeSearch3 time (ms): " + rangeSearch3SkipListLms);
+        System.out.println(indexName + " rangeSearch3 end query mv, version[" + firstVersion + "," + verEnd + "]" + " range key[" + keyStart + "," + keyEnd + "]");
+//        System.out.println("---------------------------------------\n" + index);
+    // -------------------------------------------------------------------------------------- commit
 
-        System.out.println(indexName + " rangeSearch3 start");
-        myTimer.init();
-        myTimer.start();
-        index.rangeSearch3(firstVersion, verEnd, keyStart, keyEnd, mr);
-        myTimer.pause();
-        double rangeSearch3MerkleLms = myTimer.getElapsedMilliSeconds();
-        mr.clear();
-        System.out.println(indexName + " rangeSearch3 time (ms): " + rangeSearch3MerkleLms);
-
-
-        Integer firstKey = keys.get(0);
-        Integer lastKey = keys.get(keys.size() - 1);
         System.out.println(indexName + " rangeSearch4 start");
         myTimer.init();
         myTimer.start();
-        index.rangeSearch4(firstVersion, verEnd, slr);
+        index.rangeSearch4(firstVersion, verEnd, searchOutput);
         myTimer.pause();
         double rangeSearch4SkipListLms = myTimer.getElapsedMilliSeconds();
-        slr.clear();
+        searchOutput.clear();
         System.out.println(indexName + " rangeSearch4 time (ms): " + rangeSearch4SkipListLms);
-
-        System.out.println(indexName + " rangeSearch4 start");
-        myTimer.init();
-        myTimer.start();
-        index.rangeSearch4(firstVersion, verEnd, mr);
-        myTimer.pause();
-        double rangeSearch4MerkleLms = myTimer.getElapsedMilliSeconds();
-        mr.clear();
-        System.out.println(indexName + " rangeSearch4 time (ms): " + rangeSearch4MerkleLms);
-
+        System.out.println(indexName + " rangeSearch3 end query mv, version[" + firstVersion + "," + verEnd + "]" + " range key[ all keys ]");
+//        System.out.println("---------------------------------------\n" + index);
+    // -------------------------------------------------------------------------------------- commit
 
         Map<String, Object> res = new HashMap<>();
         res.put("count", data.size());
@@ -1296,11 +1281,8 @@ public class Main {
         res.put("insertLs", insertLs);
         res.put("insertTPs", insertTPs);
         res.put("rangeSearch1SkipListLns", rangeSearch1SkipListLns);
-        res.put("rangeSearch1MerkleLns", rangeSearch1MerkleLns);
         res.put("rangeSearch3SkipListLms", rangeSearch3SkipListLms);
-        res.put("rangeSearch3MerkleLms", rangeSearch3MerkleLms);
         res.put("rangeSearch4SkipListLms", rangeSearch4SkipListLms);
-        res.put("rangeSearch4MerkleLms", rangeSearch4MerkleLms);
 
         return res;
     }
