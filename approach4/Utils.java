@@ -220,6 +220,13 @@ public class Utils {
         return null;
     }
 
+    /**
+     *
+     * @param currentVersion
+     * @param nextVersion
+     * @param <VersionType>
+     * @throws Exception
+     */
     public static <VersionType extends Comparable<VersionType>> void checkVersion(VersionType currentVersion, VersionType nextVersion) throws Exception {
         assertTrue(nextVersion.compareTo(currentVersion) >= 0, "next version must be equal or larger than current version");
     }

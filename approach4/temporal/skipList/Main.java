@@ -39,7 +39,6 @@ import java.util.stream.Collectors;
 public class Main {
 
 
-
     static double iterationProbability = 0.5;
     static final String runsAvgProcessed = "RunsAvgProcessed";
     static int partitionCapacity = 5;
@@ -64,9 +63,6 @@ public class Main {
 
 //        btree.close();
 //        recordManager.close();
-
-
-
 
 
 //        Set<Long> expected = new HashSet<Long>();
@@ -104,12 +100,6 @@ public class Main {
 //        cursor.close();
 
 
-
-
-
-
-
-
 //        PHTreeP<Integer> phTree = PHTreeP.createPHTree(2);
 //        phTree.insert(new double[]{1,1}, 1);
 //        phTree.insert(new double[]{1,2}, 6);
@@ -130,7 +120,6 @@ public class Main {
 //            System.out.println(next.value());
 //
 //        }
-
 
 
 //        long time = System.currentTimeMillis();
@@ -201,35 +190,30 @@ public class Main {
        adhering to the expected sorted order of keys in a B-tree. This process validates the integrity and correctness of the B-tree's sorting mechanism.
     */
     private static boolean btree1() throws IOException, KeyNotFoundException {
-        BTree<Long, String> btree = BTreeFactory.createInMemoryBTree( "test", LongSerializer.INSTANCE, StringSerializer.INSTANCE );
+        BTree<Long, String> btree = BTreeFactory.createInMemoryBTree("test", LongSerializer.INSTANCE, StringSerializer.INSTANCE);
         btree.setPageSize(32);
 
 
-        Random random = new Random( System.nanoTime() );
+        Random random = new Random(System.nanoTime());
 
         int nbElems = 500000;
 
 
         // Create a BTree with 500 000 entries
-        for ( int i = 0; i < nbElems; i++ )
-        {
-            long key = ( long ) random.nextLong();
-            String value = Long.toString( key );
+        for (int i = 0; i < nbElems; i++) {
+            long key = (long) random.nextLong();
+            String value = Long.toString(key);
 
-            try
-            {
-                btree.insert( key, value );
+            try {
+                btree.insert(key, value);
 
-                if ( i % 100000 == 0 )
-                {
-                    System.out.println( "Written " + i + " elements" );
+                if (i % 100000 == 0) {
+                    System.out.println("Written " + i + " elements");
                 }
-            }
-            catch ( Exception e )
-            {
+            } catch (Exception e) {
                 e.printStackTrace();
-                System.out.println( btree );
-                System.out.println( "Error while adding " + value );
+                System.out.println(btree);
+                System.out.println("Error while adding " + value);
                 return true;
             }
         }
@@ -241,28 +225,22 @@ public class Main {
 //        int size = 0;
         long elem = Long.MIN_VALUE;
 
-        while ( cursor.hasNext() )
-        {
+        while (cursor.hasNext()) {
             Tuple<Long, String> res = cursor.next();
 
-            if ( res.getKey() > elem )
-            {
+            if (res.getKey() > elem) {
                 elem = res.getKey();
                 elems.add(elem);
 //                size++;
             }
         }
 
-        for ( int i = 0; i < elems.size(); i++ )
-        {
-            try
-            {
-                String s = btree.get( elems.get(i) );
+        for (int i = 0; i < elems.size(); i++) {
+            try {
+                String s = btree.get(elems.get(i));
                 System.out.println("got " + s);
-            }
-            catch ( KeyNotFoundException knfe )
-            {
-                System.out.println( "Bad tree, missing " + elems.get(i) + ", " + btree );
+            } catch (KeyNotFoundException knfe) {
+                System.out.println("Bad tree, missing " + elems.get(i) + ", " + btree);
             }
         }
 
@@ -305,18 +283,18 @@ public class Main {
             String line = scanner.nextLine();
         }
 
-        HashMap<String,ArrayList<String[]>> aggLines = new HashMap<>();
+        HashMap<String, ArrayList<String[]>> aggLines = new HashMap<>();
         while (scanner.hasNextLine()) {
             String line = scanner.nextLine();
             String[] lineSplit = line.split(",");
 
             ArrayList<String> keyFields = new ArrayList<>();
-            for (int i=0; i<colsCount; i++) {
+            for (int i = 0; i < colsCount; i++) {
                 if (aggKey.contains(i)) {
                     keyFields.add(lineSplit[i]);
                 }
             }
-            String concatKeyFields = String.join("|",keyFields);
+            String concatKeyFields = String.join("|", keyFields);
             ArrayList<String[]> curAggLines = aggLines.computeIfAbsent(concatKeyFields, k -> new ArrayList<>());
             curAggLines.add(lineSplit);
         }
@@ -328,7 +306,7 @@ public class Main {
 
             ArrayList<Object> aggLine = new ArrayList<>();
             String[] firstLineSplit = lineSplits.get(0);
-            for (int i=0; i<colsCount; i++) {
+            for (int i = 0; i < colsCount; i++) {
                 if (aggKey.contains(i)) {
                     aggLine.add(firstLineSplit[i]);
                 } else {
@@ -338,7 +316,7 @@ public class Main {
 
 
             for (String[] lineSplit : lineSplits) {
-                for (int i=0; i<colsCount; i++) {
+                for (int i = 0; i < colsCount; i++) {
                     if (!aggKey.contains(i)) {
                         double val = Double.parseDouble(lineSplit[i]);
                         aggLine.set(i, val + (double) aggLine.get(i));
@@ -347,9 +325,9 @@ public class Main {
             }
 
             long linesCount = lineSplits.size();
-            for (int i=0; i<colsCount; i++) {
+            for (int i = 0; i < colsCount; i++) {
                 if (!aggKey.contains(i)) {
-                    aggLine.set(i, (double) aggLine.get(i) /  linesCount);
+                    aggLine.set(i, (double) aggLine.get(i) / linesCount);
                 }
             }
 
@@ -427,7 +405,7 @@ public class Main {
 //            for (int i=0;i<runs;i++) {
 //                merkleCapacities.add(1000);
 //            }
-            for (int i=0;i<runs;i++) {
+            for (int i = 0; i < runs; i++) {
                 merkleCapacities.add(10000);
             }
 //            for (int i=0;i<runs;i++) {
@@ -447,7 +425,7 @@ public class Main {
 //            for (int i=0;i<runs;i++) {
 //                temporalIndexCapacities.add(10);
 //            }
-            for (int i=0;i<runs;i++) {
+            for (int i = 0; i < runs; i++) {
                 temporalIndexCapacities.add(20);
             }
 //            for (int i=0;i<runs;i++) {
@@ -482,7 +460,7 @@ public class Main {
     private static ArrayList<Integer> genSortedNums(int init, int step, int count) {
         ArrayList<Integer> list = new ArrayList<>();
         int cur = init;
-        for (int i = 0; i< count; i++) {
+        for (int i = 0; i < count; i++) {
             list.add(cur);
             cur += step;
         }
@@ -577,12 +555,12 @@ public class Main {
         System.out.println("tableStrIntColsSkipListIndex search time (ns): " + myTimer.getElapsedNanoSeconds());
 
         System.out.println("tableStrIntColsSkipListIndex range all start");
-        ArrayList<IRowDetails<String, TableRowStrIntCols,Integer>> s = new ArrayList<>(intArr.size());
+        ArrayList<IRowDetails<String, TableRowStrIntCols, Integer>> s = new ArrayList<>(intArr.size());
 
         myTimer.init();
         myTimer.start();
 
-        tableStrIntColsIndex.rangeSearch1(0, "", "ZZZZZZZZZ",s);
+        tableStrIntColsIndex.rangeSearch1(0, "", "ZZZZZZZZZ", s);
 
         myTimer.pause();
         double rangeAllKeysLms = myTimer.getElapsedMilliSeconds();
@@ -612,7 +590,7 @@ public class Main {
 
         MyTimer myTimer = new MyTimer();
         ITypeUtils<Integer> integerClassUtils = new IntegerClassUtils();
-        Trie<String,Integer> mpt = new Trie<>(Serializer.STRING_UTF8, integerClassUtils);
+        Trie<String, Integer> mpt = new Trie<>(Serializer.STRING_UTF8, integerClassUtils);
 
         System.out.println("patriciaMerkleTrieIndex insert start");
         myTimer.start();
@@ -652,14 +630,14 @@ public class Main {
         double searchTPs = ((double) strArr.size()) / ((double) myTimer.getElapsedSeconds());
         System.out.println("patriciaMerkleTrieIndex search time (ns): " + myTimer.getElapsedNanoSeconds());
 
-        Map<String,Object> res = new HashMap<>();
+        Map<String, Object> res = new HashMap<>();
         res.put("count", intArr.size());
-        res.put("insertLs",insertLs);
-        res.put("insertTPs",insertTPs);
-        res.put("updateLs",updateLs);
-        res.put("updateTPs",updateTPs);
-        res.put("searchLms",searchLms);
-        res.put("searchTPs",searchTPs);
+        res.put("insertLs", insertLs);
+        res.put("insertTPs", insertTPs);
+        res.put("updateLs", updateLs);
+        res.put("updateTPs", updateTPs);
+        res.put("searchLms", searchLms);
+        res.put("searchTPs", searchTPs);
 
         return res;
     }
@@ -681,10 +659,10 @@ public class Main {
         double insertTPs = ((double) data.size()) / ((double) myTimer.getElapsedSeconds());
         System.out.println(indexName + "insert end. time (s): " + myTimer.getElapsedSeconds());
 
-        Map<String,Object> res = new HashMap<>();
+        Map<String, Object> res = new HashMap<>();
         res.put("count", data.size());
-        res.put("insertLs",insertLs);
-        res.put("insertTPs",insertTPs);
+        res.put("insertLs", insertLs);
+        res.put("insertTPs", insertTPs);
 
         return res;
     }
@@ -702,19 +680,19 @@ public class Main {
 
         ProcessRunsAvg(Paths.get(logPrefix + merkleBucketTree + logPostfix),
                 Paths.get(logPrefix + merkleBucketTree + runsAvgProcessed + logPostfix),
-                filesMetaData.get(merkleBucketTree), new HashSet<>(Arrays.asList(0,1)));
+                filesMetaData.get(merkleBucketTree), new HashSet<>(Arrays.asList(0, 1)));
         ProcessRunsAvg(Paths.get(logPrefix + patriciaMerkleTrie + logPostfix),
                 Paths.get(logPrefix + patriciaMerkleTrie + runsAvgProcessed + logPostfix),
                 filesMetaData.get(patriciaMerkleTrie), new HashSet<>(Arrays.asList(0)));
         ProcessRunsAvg(Paths.get(logPrefix + temporalSkipList + logPostfix),
                 Paths.get(logPrefix + temporalSkipList + runsAvgProcessed + logPostfix),
-                filesMetaData.get(temporalSkipList), new HashSet<>(Arrays.asList(0,1)));
+                filesMetaData.get(temporalSkipList), new HashSet<>(Arrays.asList(0, 1)));
         ProcessRunsAvg(Paths.get(logPrefix + verToIndex + logPostfix),
                 Paths.get(logPrefix + verToIndex + runsAvgProcessed + logPostfix),
-                filesMetaData.get(verToIndex), new HashSet<>(Arrays.asList(0,1)));
+                filesMetaData.get(verToIndex), new HashSet<>(Arrays.asList(0, 1)));
         ProcessRunsAvg(Paths.get(logPrefix + temporalIndex + logPostfix),
                 Paths.get(logPrefix + temporalIndex + runsAvgProcessed + logPostfix),
-                filesMetaData.get(temporalIndex), new HashSet<>(Arrays.asList(0,1)));
+                filesMetaData.get(temporalIndex), new HashSet<>(Arrays.asList(0, 1)));
         ProcessRunsAvg(Paths.get(logPrefix + phTreeIndex + logPostfix),
                 Paths.get(logPrefix + phTreeIndex + runsAvgProcessed + logPostfix),
                 filesMetaData.get(phTreeIndex), new HashSet<>(Arrays.asList(0)));
@@ -848,7 +826,7 @@ public class Main {
 
     private static void changeKeysToConsecutiveKeys(ArrayList<TupleTwo<Integer, Date>> data) {
 
-        HashMap<Integer,Integer> keysToMappedKeys = new HashMap<>();
+        HashMap<Integer, Integer> keysToMappedKeys = new HashMap<>();
 
         for (TupleTwo<Integer, Date> row : data) {
             int key = row.first;
@@ -874,7 +852,7 @@ public class Main {
 
 
         boolean isFirstBatch = true;
-        for (Integer itemsCount: itemsCounts) {
+        for (Integer itemsCount : itemsCounts) {
             for (Integer versionsCount : versionsCounts) {
                 for (double keysPercent : keysPercentsCounts) {
                     settings.put("percent", keysPercent);
@@ -889,7 +867,6 @@ public class Main {
             }
         }
     }
-
 
 
     private static void collectEvaluationResultsScenario2(String logPrefix, String logPostfix, ArrayList<Integer> itemsCounts, ArrayList<Integer> versionsCounts, int runs, ArrayList<Double> keysPercentsCounts) throws Exception {
@@ -960,18 +937,18 @@ public class Main {
                 filesMetaData.get(temporalIndex), new HashSet<>(Arrays.asList(0, 1, 2)));
     }
 
-    public static void collectEvaluationResultsScenario2(String logPrefix, String logPostfix, HashMap<String, Object> settings, HashMap<String,HashMap<String,Object>> filesMetaData, boolean initCsvFiles) throws Exception {
+    public static void collectEvaluationResultsScenario2(String logPrefix, String logPostfix, HashMap<String, Object> settings, HashMap<String, HashMap<String, Object>> filesMetaData, boolean initCsvFiles) throws Exception {
 
         // Path variables
         Path pathMerkleBucketScenario = Paths.get(logPrefix + merkleBucketTree + logPostfix);
         Path pathPatriciaMerkleTrieScenario = Paths.get(logPrefix + patriciaMerkleTrie + logPostfix);
         Path pathTempSkipListScenario = Paths.get(logPrefix + temporalSkipList + logPostfix);
         Path pathTempIndexScenario = Paths.get(logPrefix + temporalIndex + logPostfix);
-        Path pathAVLTreeScenario = Paths.get(logPrefix+avlTreeIndex+logPostfix);
+        Path pathAVLTreeScenario = Paths.get(logPrefix + avlTreeIndex + logPostfix);
         Path pathPhTreeIndexScenario = Paths.get(logPrefix + phTreeIndex + logPostfix);
         Path pathMerkleKDTreeIndexScenario = Paths.get(logPrefix + merkleKDTreeIndex + logPostfix);
 
-         // Initialize files, write headers;  
+        // Initialize files, write headers;
         if (initCsvFiles) {
             initFile(merkleBucketTree, filesMetaData, pathMerkleBucketScenario);
             initFile(patriciaMerkleTrie, filesMetaData, pathPatriciaMerkleTrieScenario);
@@ -1057,10 +1034,10 @@ public class Main {
 
             Map<String, Object> skipListIndexRunRes =
                     SearchMVScenarios(
-                    "tableStrIntColsSkipListIndex",
-                    index,
-                    data_,
-                    percent);
+                            "tableStrIntColsSkipListIndex",
+                            index,
+                            data_,
+                            percent);
             writeScenarioResultsToFile(pathTempSkipListScenario, skipListIndexRunRes);
 
             versionsToKeysIndex = new VersionsToKeysIndex<>(firstVersion, data.size());
@@ -1102,9 +1079,6 @@ public class Main {
 //            writeScenarioResultsToFile(pathMerkleKDTreeIndexScenario, merkleKDTreeIndexRunRes);
 
 
-
-
-
             // TODO find scenario to strictly increasing keys only, which can use VersionsToConsecutiveKeysIndex
 //            changeKeysToConsecutiveKeys(data);
 //            data_ = getTableRowIntDateCols(data, tableIntDateColsIndexTypeUtils);
@@ -1118,7 +1092,7 @@ public class Main {
         }
     }
 
-    public static void collectEvaluationResultsScenario33(String logPrefix, String logPostfix, HashMap<String, Object> settings, HashMap<String,HashMap<String,Object>> filesMetaData, CsvReader csvReader) throws Exception {
+    public static void collectEvaluationResultsScenario33(String logPrefix, String logPostfix, HashMap<String, Object> settings, HashMap<String, HashMap<String, Object>> filesMetaData, CsvReader csvReader) throws Exception {
 
         Path pathMerkleBucketScenario = Paths.get(logPrefix + merkleBucketTree + logPostfix);
         Path pathPatriciaMerkleTrieScenario = Paths.get(logPrefix + patriciaMerkleTrie + logPostfix);
@@ -1178,9 +1152,11 @@ public class Main {
         writeScenarioResultsToFile(pathTempIndexScenario, tempIndexRunRes);
     }
 
-    public static Map<String, Object> SearchMVScenarios(String indexName, IIndexMVIntDate index, List<TableRowIntDateCols> data, double percent) throws Exception {
-        System.out.println(indexName);
-        System.out.println("---------------------------------------\n"+index);
+    public static Map<String, Object> SearchMVScenarios(String indexName, IIndexMVIntDate index, List<TableRowIntDateCols> data, double percent, boolean verboseEnabled) throws Exception {
+        if (verboseEnabled)
+            System.out.println(indexName);
+        if (verboseEnabled)
+            System.out.println("---------------------------------------\n" + index);
 
         MyTimer myTimer = new MyTimer();
 
@@ -1191,10 +1167,12 @@ public class Main {
             versions_.add(row.col2);
         }
 
-        // Sort keys and versions individually? Shouldn't it be sorted together? 
+        // Sort keys and versions individually? Shouldn't it be sorted together?
+        // ^ not part of the algorithm, this is for demoing.
         List<Integer> keys = keys_.stream()
                 .sorted(Comparator.comparing(o -> o))
                 .collect(Collectors.toList());
+
         List<Date> versions = versions_.stream()
                 .sorted(Comparator.comparing(o -> o))
                 .collect(Collectors.toList());
@@ -1202,20 +1180,22 @@ public class Main {
         Date firstVersion = versions.get(0);
         Date currentVersion = firstVersion;
 
-        int keysArrFractionCount = (int) (keys.size()*percent);
+        int keysArrFractionCount = (int) (keys.size() * percent);
 
-        int versionsFractionCount = (int) Math.max(1, versions.size()*percent);
+        int versionsFractionCount = (int) Math.max(1, versions.size() * percent);
 
+        // -------------------------------------------------------------------------------------- commit
         System.out.println(indexName + " insert-commit start");
         myTimer.start();
 
+        // find any commit that is not aligned with the current one in the index from the row.
         for (TableRowIntDateCols row : data) {
             if (!currentVersion.equals(row.col2)) {
                 currentVersion = row.col2;
                 index.commitCurrentVersion(currentVersion);
             }
             index.insert(row);
-            System.out.println("\n"+index);
+            System.out.println("\n" + index);
         }
 
         index.finalizeInsert();
@@ -1228,37 +1208,54 @@ public class Main {
         List<Integer> keysArrFirstFractionSortedElements = keys.stream().sorted().limit(keysArrFractionCount).collect(Collectors.toList());
         Integer keyStart = keysArrFirstFractionSortedElements.get(0);
         Integer keyEnd = keysArrFirstFractionSortedElements.get(keysArrFirstFractionSortedElements.size() - 1);
-        System.out.println("---------------------------------------\n"+index);
-
+//        System.out.println("---------------------------------------\n"+index);
         System.out.println(indexName + " rangeSearch1 start");
-        ArrayList<IRowDetails<Integer, TableRowIntDateCols,Date>> slr = new ArrayList<>(keys.size());
+        ArrayList<IRowDetails<Integer, TableRowIntDateCols, Date>> searchOutput = new ArrayList<>(keys.size());
+        //slr, idk what it stood for. renamed to search output.
         myTimer.init();
         myTimer.start();
-        index.rangeSearch1(firstVersion, keyStart, keyEnd, slr);
+        index.rangeSearch1(firstVersion, keyStart, keyEnd, searchOutput);
         myTimer.pause();
         double rangeSearch1SkipListLns = myTimer.getElapsedNanoSeconds();
-        slr.clear();
+        searchOutput.clear();
         System.out.println(indexName + " rangeSearch1 time (ns): " + rangeSearch1SkipListLns);
+        System.out.println(indexName + " rangeSearch1 end query svrk, version:" + firstVersion + " range key[" + keyStart + "," + keyEnd + "]");
+        System.out.println("---------------------------------------\n" + index);
+//        ArrayList<Object> mr = new ArrayList<>(keys.size());
+//        //mr, idk what it stands for
+//        myTimer.init();
+//        myTimer.start();
+//        index.rangeSearch1(firstVersion, keyStart, keyEnd, mr);
+//        myTimer.pause();
+//        double rangeSearch1MerkleLns = myTimer.getElapsedNanoSeconds();
+//        mr.clear();
+//        System.out.println(indexName + " rangeSearch1 time (ns): " + rangeSearch1MerkleLns);
 
-        System.out.println(indexName + " rangeSearch1 start");
-        ArrayList<Object> mr = new ArrayList<>(keys.size());
+        System.out.println(indexName + " rangeSearch2 start");
+        // output in searchOutput
+        // slr, idk what it stood for. renamed to searcOutput.
         myTimer.init();
         myTimer.start();
-        index.rangeSearch1(firstVersion, keyStart, keyEnd, mr);
+        Date verEnd = versions.get(versionsFractionCount - 1);
+        // verStart = first version.
+        index.rangeSearch2(firstVersion, verEnd, keyStart, keyEnd, searchOutput);
         myTimer.pause();
-        double rangeSearch1MerkleLns = myTimer.getElapsedNanoSeconds();
-        mr.clear();
-        System.out.println(indexName + " rangeSearch1 time (ns): " + rangeSearch1MerkleLns);
+        double rangeSearch2SkipListLns = myTimer.getElapsedNanoSeconds();
 
+        // clear list to use for the next search results
+        searchOutput.clear();
+        System.out.println(indexName + " rangeSearch1 time (ns): " + rangeSearch2SkipListLns);
+        System.out.println(indexName + " rangeSearch1 end query svrk, version:" + firstVersion + " range key[" + keyStart + "," + keyEnd + "]");
+        System.out.println("---------------------------------------\n" + index);
 
         Date verEnd = versions.get(versionsFractionCount - 1);
         System.out.println(indexName + " rangeSearch3 start");
         myTimer.init();
         myTimer.start();
-        index.rangeSearch3(firstVersion, verEnd, keyStart, keyEnd, slr);
+        index.rangeSearch3(firstVersion, verEnd, keyStart, keyEnd, searchOutput);
         myTimer.pause();
         double rangeSearch3SkipListLms = myTimer.getElapsedMilliSeconds();
-        slr.clear();
+        searchOutput.clear();
         System.out.println(indexName + " rangeSearch3 time (ms): " + rangeSearch3SkipListLms);
 
         System.out.println(indexName + " rangeSearch3 start");
@@ -1272,7 +1269,7 @@ public class Main {
 
 
         Integer firstKey = keys.get(0);
-        Integer lastKey = keys.get(keys.size()-1);
+        Integer lastKey = keys.get(keys.size() - 1);
         System.out.println(indexName + " rangeSearch4 start");
         myTimer.init();
         myTimer.start();
@@ -1292,12 +1289,12 @@ public class Main {
         System.out.println(indexName + " rangeSearch4 time (ms): " + rangeSearch4MerkleLms);
 
 
-        Map<String,Object> res = new HashMap<>();
-        res.put("count",data.size());
-        res.put("versions",versions.size());
-        res.put("keysPercent",percent);
-        res.put("insertLs",insertLs);
-        res.put("insertTPs",insertTPs);
+        Map<String, Object> res = new HashMap<>();
+        res.put("count", data.size());
+        res.put("versions", versions.size());
+        res.put("keysPercent", percent);
+        res.put("insertLs", insertLs);
+        res.put("insertTPs", insertTPs);
         res.put("rangeSearch1SkipListLns", rangeSearch1SkipListLns);
         res.put("rangeSearch1MerkleLns", rangeSearch1MerkleLns);
         res.put("rangeSearch3SkipListLms", rangeSearch3SkipListLms);
@@ -1315,8 +1312,8 @@ public class Main {
         ToweredTypeUtils<String, TableRowStrIntCols> tableStrIntColsIndexTypeUtils = getTableStrIntColsIndexTypeUtils();
         ToweredSkipList<Integer, String, TableRowStrIntCols> tableStrIntColsIndex = new ToweredSkipList<>(0, iterationProbability, partitionCapacity, tableStrIntColsIndexTypeUtils);
 
-        int intArrFractionCount = (int) (strArr.size()*percent);
-        int versionsFractionCount = (int) Math.max(1, versions.size()*percent);
+        int intArrFractionCount = (int) (strArr.size() * percent);
+        int versionsFractionCount = (int) Math.max(1, versions.size() * percent);
 
 
         System.out.println("tableStrIntColsSkipListIndexScenario2 insert-commit start");
@@ -1332,7 +1329,7 @@ public class Main {
             nextVersion++;
         }
 
-        Utils.assertTrue((nextVersion-1) == versions.size());
+        Utils.assertTrue((nextVersion - 1) == versions.size());
 
         myTimer.pause();
         double insertLs = myTimer.getElapsedSeconds();
@@ -1359,7 +1356,7 @@ public class Main {
         List<String> strArrFirstFractionSortedElements = strArr.stream().sorted().limit(intArrFractionCount).collect(Collectors.toList());
         String keyStart = strArrFirstFractionSortedElements.get(0);
         String keyEnd = strArrFirstFractionSortedElements.get(strArrFirstFractionSortedElements.size() - 1);
-        ArrayList<IRowDetails<String, TableRowStrIntCols,Integer>> s = new ArrayList<>(strArr.size());
+        ArrayList<IRowDetails<String, TableRowStrIntCols, Integer>> s = new ArrayList<>(strArr.size());
 
         myTimer.init();
         myTimer.start();
@@ -1400,14 +1397,15 @@ public class Main {
 
         return getStringObjectMapScenario2(versions, strArr, percent, insertLs, insertTPs, updateLs, updateTPs, rangeSearch1Lms, rangeSearch1TPs, rangeSearch3Lms, rangeSearch3TPs, rangeSearch4Lms, rangeSearch4TPs);
     }
+
     public static Map<String, Object> merkleBucketTreeMVScenario2(int capacity, ArrayList<ArrayList<TableRowStrIntCols>> versions, List<String> strArr, double percent) throws Exception {
         System.out.println("merkleBucketTreeMVScenario");
 
         MyTimer myTimer = new MyTimer();
         MerkleBucketTreeMVStringInteger mbtMv = new MerkleBucketTreeMVStringInteger(capacity);
 
-        int intArrFractionCount = (int) (strArr.size()*percent);
-        int versionsFractionCount = (int) Math.max(1, versions.size()*percent);
+        int intArrFractionCount = (int) (strArr.size() * percent);
+        int versionsFractionCount = (int) Math.max(1, versions.size() * percent);
 
         System.out.println("merkleBucketTreeMVScenario insert-commit start");
         myTimer.start();
@@ -1420,7 +1418,7 @@ public class Main {
             nextVersion++;
         }
 
-        Utils.assertTrue((nextVersion-1) == versions.size());
+        Utils.assertTrue((nextVersion - 1) == versions.size());
 
         myTimer.pause();
         double insertLs = myTimer.getElapsedSeconds();
@@ -1496,8 +1494,8 @@ public class Main {
         MyTimer myTimer = new MyTimer();
         PatriciaMerkleTrieMVStringInteger pmtMv = new PatriciaMerkleTrieMVStringInteger();
 
-        int intArrFractionCount = (int) (strArr.size()*percent);
-        int versionsFractionCount = (int) Math.max(1, versions.size()*percent);
+        int intArrFractionCount = (int) (strArr.size() * percent);
+        int versionsFractionCount = (int) Math.max(1, versions.size() * percent);
 
         System.out.println("patriciaMerkleTrieIndexScenario insert-commit start");
         myTimer.start();
@@ -1510,7 +1508,7 @@ public class Main {
             nextVersion++;
         }
 
-        Utils.assertTrue((nextVersion-1) == versions.size());
+        Utils.assertTrue((nextVersion - 1) == versions.size());
 
         myTimer.pause();
         double insertLs = myTimer.getElapsedSeconds();
@@ -1634,12 +1632,12 @@ public class Main {
         System.out.println("tableStrIntColsTemporalIndex search time (ns): " + myTimer.getElapsedNanoSeconds());
 
         System.out.println("tableStrIntColsTemporalIndex range all start");
-        ArrayList<IRowDetails<String, TableRowStrIntCols,Integer>> s = new ArrayList<>(intArr.size());
+        ArrayList<IRowDetails<String, TableRowStrIntCols, Integer>> s = new ArrayList<>(intArr.size());
 
         myTimer.init();
         myTimer.start();
 
-        tableStrIntColsIndex.rangeSearch1(0, "", "ZZZZZZZZZ",s);
+        tableStrIntColsIndex.rangeSearch1(0, "", "ZZZZZZZZZ", s);
 
         myTimer.pause();
         double rangeAllKeysLms = myTimer.getElapsedMilliSeconds();
@@ -1672,8 +1670,8 @@ public class Main {
         ExtendedMultiVersionSkipList<Integer, String, TableRowStrIntCols> eMvSl = new ExtendedMultiVersionSkipList<>(0, iterationProbability, versionsToKeysIndex, partitionCapacity, tableStrIntColsIndexTypeUtils);
         ITypeUtils<TableRowStrIntCols> tableRowStrIntColsClassUtils = tableStrIntColsIndexTypeUtils.vTypeUtils;
 
-        int intArrFractionCount = (int) (strArr.size()*percent);
-        int versionsFractionCount = (int) Math.max(1, versions.size()*percent);
+        int intArrFractionCount = (int) (strArr.size() * percent);
+        int versionsFractionCount = (int) Math.max(1, versions.size() * percent);
 
         System.out.println("tableStrIntColsTemporalIndexScenario insert-commit start");
         myTimer.start();
@@ -1693,7 +1691,7 @@ public class Main {
             nextVersion++;
         }
 
-        Utils.assertTrue((nextVersion-1) == versions.size());
+        Utils.assertTrue((nextVersion - 1) == versions.size());
 
         myTimer.pause();
         double insertLs = myTimer.getElapsedSeconds();
@@ -1723,7 +1721,7 @@ public class Main {
         String keyEnd = strArrFirstFractionSortedElements.get(strArrFirstFractionSortedElements.size() - 1);
 
         System.out.println("tableStrIntColsTemporalIndexScenario rangeSearch1 all start");
-        ArrayList<IRowDetails<String, TableRowStrIntCols,Integer>> s = new ArrayList<>(strArr.size());
+        ArrayList<IRowDetails<String, TableRowStrIntCols, Integer>> s = new ArrayList<>(strArr.size());
 
         myTimer.init();
         myTimer.start();
@@ -1768,19 +1766,19 @@ public class Main {
     private static Map<String, Object> getStringObjectMapScenario2(ArrayList<Integer> intArr, double insertLs, double insertTPs, double updateLs,
                                                                    double updateTPs, double searchLms, double searchTPs, double rangeAllKeysLms,
                                                                    double rangeAllKeysTPs, double deleteLms, double deleteTPs) {
-        Map<String,Object> res = new HashMap<>();
+        Map<String, Object> res = new HashMap<>();
         res.put("count", intArr.size());
         res.put("maxLevel", ToweredSkipList.MAX_LEVEL);
-        res.put("insertLs",insertLs);
-        res.put("insertTPs",insertTPs);
-        res.put("updateLs",updateLs);
-        res.put("updateTPs",updateTPs);
-        res.put("searchLms",searchLms);
-        res.put("searchTPs",searchTPs);
-        res.put("rangeAllKeysLms",rangeAllKeysLms);
-        res.put("rangeAllKeysTPs",rangeAllKeysTPs);
-        res.put("deleteLms",deleteLms);
-        res.put("deleteTPs",deleteTPs);
+        res.put("insertLs", insertLs);
+        res.put("insertTPs", insertTPs);
+        res.put("updateLs", updateLs);
+        res.put("updateTPs", updateTPs);
+        res.put("searchLms", searchLms);
+        res.put("searchTPs", searchTPs);
+        res.put("rangeAllKeysLms", rangeAllKeysLms);
+        res.put("rangeAllKeysTPs", rangeAllKeysTPs);
+        res.put("deleteLms", deleteLms);
+        res.put("deleteTPs", deleteTPs);
 
         return res;
     }
@@ -1789,14 +1787,14 @@ public class Main {
                                                                    double percent, double insertLs, double insertTPs, double updateLs, double updateTPs,
                                                                    double rangeSearch1Lms, double rangeSearch1TPs, double rangeSearch3Lms, double rangeSearch3TPs,
                                                                    double rangeSearch4Lms, double rangeSearch4TPs) {
-        Map<String,Object> res = new HashMap<>();
-        res.put("count",strArr.size());
-        res.put("versions",versions.size());
-        res.put("keysPercent",percent);
-        res.put("insertLs",insertLs);
-        res.put("insertTPs",insertTPs);
-        res.put("updateLs",updateLs);
-        res.put("updateTPs",updateTPs);
+        Map<String, Object> res = new HashMap<>();
+        res.put("count", strArr.size());
+        res.put("versions", versions.size());
+        res.put("keysPercent", percent);
+        res.put("insertLs", insertLs);
+        res.put("insertTPs", insertTPs);
+        res.put("updateLs", updateLs);
+        res.put("updateTPs", updateTPs);
         res.put("rangeSearch1Lms", rangeSearch1Lms);
         res.put("rangeSearch1TPs", rangeSearch1TPs);
         res.put("rangeSearch3Lms", rangeSearch3Lms);
@@ -1807,17 +1805,17 @@ public class Main {
         return res;
     }
 
-    private static Map<String, Object> getStringObjectMapScenario3(List<TupleTwo<Integer,Date>> data, List<Date> versions, double percent, double insertLns,
+    private static Map<String, Object> getStringObjectMapScenario3(List<TupleTwo<Integer, Date>> data, List<Date> versions, double percent, double insertLns,
                                                                    double insertTPns, double updateLns, double updateTPns, double rangeSearch1Lns, double rangeSearch1TPns,
                                                                    double rangeSearch3Lns, double rangeSearch3TPns, double rangeSearch4Lns, double rangeSearch4TPns) {
-        Map<String,Object> res = new HashMap<>();
-        res.put("count",data.size());
-        res.put("versions",versions.size());
-        res.put("keysPercent",percent);
-        res.put("insertLns",insertLns);
-        res.put("insertTPns",insertTPns);
-        res.put("updateLns",updateLns);
-        res.put("updateTPns",updateTPns);
+        Map<String, Object> res = new HashMap<>();
+        res.put("count", data.size());
+        res.put("versions", versions.size());
+        res.put("keysPercent", percent);
+        res.put("insertLns", insertLns);
+        res.put("insertTPns", insertTPns);
+        res.put("updateLns", updateLns);
+        res.put("updateTPns", updateTPns);
         res.put("rangeSearch1Lns", rangeSearch1Lns);
         res.put("rangeSearch1TPns", rangeSearch1TPns);
         res.put("rangeSearch3Lns", rangeSearch3Lns);
@@ -1827,6 +1825,7 @@ public class Main {
 
         return res;
     }
+
     private static void writeScenarioResultsToFile3(Path pathPatriciaMerkleTrieScenario, Map<String, Object> patriciaMerkleTrieRunRes) {
         String line;
         line = String.format("%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s",
@@ -1877,7 +1876,7 @@ public class Main {
                 filesMetaData.get(temporalIndex), new HashSet<>(Arrays.asList(0, 1, 2)));
     }
 
-    public static void collectEvaluationResultsScenario3(String logPrefix, String logPostfix, HashMap<String, Object> settings, HashMap<String,HashMap<String,Object>> filesMetaData, CsvReader csvReader, boolean initCsvFiles) throws Exception {
+    public static void collectEvaluationResultsScenario3(String logPrefix, String logPostfix, HashMap<String, Object> settings, HashMap<String, HashMap<String, Object>> filesMetaData, CsvReader csvReader, boolean initCsvFiles) throws Exception {
 
 
         Path pathMerkleBucketScenario = Paths.get(logPrefix + merkleBucketTree + logPostfix);
@@ -1929,8 +1928,8 @@ public class Main {
 
     private static ArrayList<TupleTwo<Integer, Date>> getSyntheticMedicalDataSet(int totalRowsCount, LocalDate startLocalDate, int datesCount, int firstPatientID, double patientsPerDateRatio) {
 
-        int patientIDsSize = (int) ((totalRowsCount/datesCount)/patientsPerDateRatio);
-        int patientIDsPerDayCount = (int) (patientIDsSize*patientsPerDateRatio);
+        int patientIDsSize = (int) ((totalRowsCount / datesCount) / patientsPerDateRatio);
+        int patientIDsPerDayCount = (int) (patientIDsSize * patientsPerDateRatio);
 
         ArrayList<TupleTwo<Integer, Date>> res = new ArrayList<>();
 
@@ -1949,7 +1948,7 @@ public class Main {
 
         for (Date date : sequentialDates) {
             Collections.shuffle(patientIDs);
-            for (int i=0; i<patientIDsPerDayCount; i++) {
+            for (int i = 0; i < patientIDsPerDayCount; i++) {
                 res.add(new TupleTwo<>(patientIDs.get(i), date));
             }
         }
@@ -2000,8 +1999,8 @@ public class Main {
         Date firstVersion = versions.get(0);
         Date currentVersion = firstVersion;
 
-        int keysArrFractionCount = (int) (keys.size()*percent);
-        int versionsFractionCount = (int) Math.max(1, versions.size()*percent);
+        int keysArrFractionCount = (int) (keys.size() * percent);
+        int versionsFractionCount = (int) Math.max(1, versions.size() * percent);
 
         ToweredSkipList<Date, Integer, TableRowIntDateCols> tableIntDateColsIndex = new ToweredSkipList<>(currentVersion, iterationProbability, partitionCapacity, tableIntDateColsIndexTypeUtils);
 
@@ -2039,7 +2038,7 @@ public class Main {
         List<Integer> keysArrFirstFractionSortedElements = keys.stream().sorted().limit(keysArrFractionCount).collect(Collectors.toList());
         Integer keyStart = keysArrFirstFractionSortedElements.get(0);
         Integer keyEnd = keysArrFirstFractionSortedElements.get(keysArrFirstFractionSortedElements.size() - 1);
-        ArrayList<IRowDetails<Integer, TableRowIntDateCols,Date>> s = new ArrayList<>(keys.size());
+        ArrayList<IRowDetails<Integer, TableRowIntDateCols, Date>> s = new ArrayList<>(keys.size());
 
         myTimer.init();
         myTimer.start();
@@ -2068,7 +2067,7 @@ public class Main {
         s.clear();
 
         Integer firstKey = keys.get(0);
-        Integer lastKey = keys.get(keys.size()-1);
+        Integer lastKey = keys.get(keys.size() - 1);
 
         myTimer.init();
         myTimer.start();
@@ -2082,7 +2081,7 @@ public class Main {
         return getStringObjectMapScenario3(data, versions, percent, insertLns, 0, updateLns, 0, rangeSearch1Lns, 0, rangeSearch3Lns, 0, rangeSearch4Lns, 0);
     }
 
-    public static Map<String, Object> patriciaMerkleTrieMVIntDateIndexScenario3(List<TupleTwo<Integer,Date>> data, double percent) throws Exception {
+    public static Map<String, Object> patriciaMerkleTrieMVIntDateIndexScenario3(List<TupleTwo<Integer, Date>> data, double percent) throws Exception {
         System.out.println("patriciaMerkleTrieMVIntDateIndexScenario3");
 
         MyTimer myTimer = new MyTimer();
@@ -2110,9 +2109,8 @@ public class Main {
         PatriciaMerkleTrieMVIntDate pmtMv = new PatriciaMerkleTrieMVIntDate();
 
 
-
-        int keysArrFractionCount = (int) (keys.size()*percent);
-        int versionsFractionCount = (int) Math.max(1, versions.size()*percent);
+        int keysArrFractionCount = (int) (keys.size() * percent);
+        int versionsFractionCount = (int) Math.max(1, versions.size() * percent);
 
 
         System.out.println("patriciaMerkleTrieMVIntDateIndexScenario3 insert-commit start");
@@ -2179,7 +2177,7 @@ public class Main {
         s.clear();
 
         Integer firstKey = keys.get(0);
-        Integer lastKey = keys.get(keys.size()-1);
+        Integer lastKey = keys.get(keys.size() - 1);
 
         myTimer.init();
         myTimer.start();
@@ -2194,7 +2192,6 @@ public class Main {
     }
 
     public static Map<String, Object> tableIntDateColsTemporalIndexScenario3(List<TupleTwo<Integer, Date>> data, double percent, double iterationProbability) throws Exception {
-
 
 
         System.out.println("tableIntDateColsTemporalIndexScenario3");
@@ -2219,8 +2216,8 @@ public class Main {
         Date firstVersion = versions.get(0);
         Date currentVersion = firstVersion;
 
-        int keysArrFractionCount = (int) (keys.size()*percent);
-        int versionsFractionCount = (int) Math.max(1, versions.size()*percent);
+        int keysArrFractionCount = (int) (keys.size() * percent);
+        int versionsFractionCount = (int) Math.max(1, versions.size() * percent);
 
         IVersionsToKeysIndex<Date, Integer> versionsToKeysIndex = new VersionsToKeysIndex<>(currentVersion, versions.size());
         ExtendedMultiVersionSkipList<Date, Integer, TableRowIntDateCols> eMvSl = new ExtendedMultiVersionSkipList<>(firstVersion, iterationProbability, versionsToKeysIndex, partitionCapacity, tableIntDateColsIndexTypeUtils);
@@ -2259,7 +2256,7 @@ public class Main {
         List<Integer> keysArrFirstFractionSortedElements = keys.stream().sorted().limit(keysArrFractionCount).collect(Collectors.toList());
         Integer keyStart = keysArrFirstFractionSortedElements.get(0);
         Integer keyEnd = keysArrFirstFractionSortedElements.get(keysArrFirstFractionSortedElements.size() - 1);
-        ArrayList<IRowDetails<Integer, TableRowIntDateCols,Date>> s = new ArrayList<>(keys.size());
+        ArrayList<IRowDetails<Integer, TableRowIntDateCols, Date>> s = new ArrayList<>(keys.size());
 
         myTimer.init();
         myTimer.start();
@@ -2288,7 +2285,7 @@ public class Main {
         s.clear();
 
         Integer firstKey = keys.get(0);
-        Integer lastKey = keys.get(keys.size()-1);
+        Integer lastKey = keys.get(keys.size() - 1);
 
         myTimer.init();
         myTimer.start();
@@ -2331,8 +2328,8 @@ public class Main {
 //        MerkleBucketTreeMVStringInteger mbtMv = new MerkleBucketTreeMVStringInteger(capacity);
 
 
-        int keysArrFractionCount = (int) (keys.size()*percent);
-        int versionsFractionCount = (int) Math.max(1, versions.size()*percent);
+        int keysArrFractionCount = (int) (keys.size() * percent);
+        int versionsFractionCount = (int) Math.max(1, versions.size() * percent);
 
 
         System.out.println("merkleBucketTreeMVIntDateScenario3 insert-commit start");
@@ -2397,7 +2394,7 @@ public class Main {
         s.clear();
 
         Integer firstKey = keys.get(0);
-        Integer lastKey = keys.get(keys.size()-1);
+        Integer lastKey = keys.get(keys.size() - 1);
 
         myTimer.init();
         myTimer.start();
