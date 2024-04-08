@@ -1162,8 +1162,8 @@ public class Main {
     }
 
     public static Map<String, Object> SearchMVScenarios(String indexName, IIndexMVIntDate index, List<TableRowIntDateCols> data, double percent, boolean verboseEnabled) throws Exception {
-        if (verboseEnabled)
-            System.out.println(indexName);
+//        if (verboseEnabled)
+////            System.out.println(indexName);
         if (verboseEnabled)
             System.out.println("---------------------------------------\n" + index);
 
@@ -1193,7 +1193,7 @@ public class Main {
 
         int versionsFractionCount = (int) Math.max(1, versions.size() * percent);
 
-    // -------------------------------------------------------------------------------------- commit
+        // -------------------------------------------------------------------------------------- commit
         System.out.println(indexName + " insert-commit start");
         myTimer.start();
 
@@ -1204,7 +1204,8 @@ public class Main {
                 index.commitCurrentVersion(currentVersion);
             }
             index.insert(row);
-            System.out.println("\n" + index);
+//            if(verboseEnabled)
+//            System.out.println("\n" + index);
         }
 
         index.finalizeInsert();
@@ -1212,13 +1213,14 @@ public class Main {
         myTimer.pause();
         double insertLs = myTimer.getElapsedSeconds();
         double insertTPs = ((double) (data.size())) / ((double) insertLs);
+        if(verboseEnabled)
         System.out.println(indexName + " insert-commit time (s): " + insertLs);
 
         List<Integer> keysArrFirstFractionSortedElements = keys.stream().sorted().limit(keysArrFractionCount).collect(Collectors.toList());
         Integer keyStart = keysArrFirstFractionSortedElements.get(0);
         Integer keyEnd = keysArrFirstFractionSortedElements.get(keysArrFirstFractionSortedElements.size() - 1);
 //        System.out.println("---------------------------------------\n"+index);
-    // -------------------------------------------------------------------------------------- commit
+        // -------------------------------------------------------------------------------------- commit
         System.out.println(indexName + " rangeSearch1 start");
         ArrayList<IRowDetails<Integer, TableRowIntDateCols, Date>> searchOutput = new ArrayList<>(keys.size());
         //slr, idk what it stood for. renamed to search output.
@@ -1228,10 +1230,12 @@ public class Main {
         myTimer.pause();
         double rangeSearch1SkipListLns = myTimer.getElapsedNanoSeconds();
         searchOutput.clear();
+        if(verboseEnabled)
         System.out.println(indexName + " rangeSearch1 time (ns): " + rangeSearch1SkipListLns);
-        System.out.println(indexName + " rangeSearch1 end query svrk, version:" + firstVersion + " range key[" + keyStart + "," + keyEnd + "]");
+        if (verboseEnabled)
+            System.out.println(indexName + " rangeSearch1 end query svrk, version:" + firstVersion + " range key[" + keyStart + "," + keyEnd + "]");
 //        System.out.println("---------------------------------------\n" + index);
-    // -------------------------------------------------------------------------------------- commit
+        // -------------------------------------------------------------------------------------- commit
 
         System.out.println(indexName + " rangeSearch2 start");
         // output in searchOutput
@@ -1245,10 +1249,12 @@ public class Main {
         double rangeSearch2SkipListLns = myTimer.getElapsedNanoSeconds();
         // clear list to use for the next search results
         searchOutput.clear();
+        if(verboseEnabled)
         System.out.println(indexName + " rangeSearch2 time (ns): " + rangeSearch2SkipListLns);
-        System.out.println(indexName + " rangeSearch2 end query mv, version[" + firstVersion + "," + verEnd + "]" + " range key[" + keyStart + "]");
+        if (verboseEnabled)
+            System.out.println(indexName + " rangeSearch2 end query mvsk, version[" + firstVersion + "," + verEnd + "]" + " range key[" + keyStart + "]");
 //        System.out.println("---------------------------------------\n" + index);
-    // -------------------------------------------------------------------------------------- commit
+        // -------------------------------------------------------------------------------------- commit
 
         System.out.println(indexName + " rangeSearch3 start");
         myTimer.init();
@@ -1257,10 +1263,12 @@ public class Main {
         myTimer.pause();
         double rangeSearch3SkipListLms = myTimer.getElapsedMilliSeconds();
         searchOutput.clear();
+        if(verboseEnabled)
         System.out.println(indexName + " rangeSearch3 time (ms): " + rangeSearch3SkipListLms);
-        System.out.println(indexName + " rangeSearch3 end query mv, version[" + firstVersion + "," + verEnd + "]" + " range key[" + keyStart + "," + keyEnd + "]");
+        if (verboseEnabled)
+            System.out.println(indexName + " rangeSearch3 end query mvrk, version[" + firstVersion + "," + verEnd + "]" + " range key[" + keyStart + "," + keyEnd + "]");
 //        System.out.println("---------------------------------------\n" + index);
-    // -------------------------------------------------------------------------------------- commit
+        // -------------------------------------------------------------------------------------- commit
 
         System.out.println(indexName + " rangeSearch4 start");
         myTimer.init();
@@ -1269,10 +1277,12 @@ public class Main {
         myTimer.pause();
         double rangeSearch4SkipListLms = myTimer.getElapsedMilliSeconds();
         searchOutput.clear();
+        if(verboseEnabled)
         System.out.println(indexName + " rangeSearch4 time (ms): " + rangeSearch4SkipListLms);
-        System.out.println(indexName + " rangeSearch3 end query mv, version[" + firstVersion + "," + verEnd + "]" + " range key[ all keys ]");
+        if(verboseEnabled)
+            System.out.println(indexName + " rangeSearch3 end query mvak, version[" + firstVersion + "," + verEnd + "]" + " range key[ all keys ]");
 //        System.out.println("---------------------------------------\n" + index);
-    // -------------------------------------------------------------------------------------- commit
+        // -------------------------------------------------------------------------------------- commit
 
         Map<String, Object> res = new HashMap<>();
         res.put("count", data.size());
