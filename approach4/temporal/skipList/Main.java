@@ -1212,6 +1212,7 @@ public class Main {
         myTimer.pause();
         double insertLs = myTimer.getElapsedSeconds();
         double insertTPs = ((double) (data.size())) / ((double) insertLs);
+
         if(verboseEnabled) {
             System.out.println(indexName + " insert-commit time (s): " + insertLs);
         }
@@ -1219,7 +1220,6 @@ public class Main {
         List<Integer> keysArrFirstFractionSortedElements = keys.stream().sorted().limit(keysArrFractionCount).collect(Collectors.toList());
         Integer keyStart = keysArrFirstFractionSortedElements.get(0);
         Integer keyEnd = keysArrFirstFractionSortedElements.get(keysArrFirstFractionSortedElements.size() - 1);
-
 
         System.out.println(indexName + " rangeSearch1 start");
         ArrayList<IRowDetails<Integer, TableRowIntDateCols, Date>> searchOutput = new ArrayList<>(keys.size());
@@ -1230,6 +1230,7 @@ public class Main {
         myTimer.pause();
         double rangeSearch1SkipListLns = myTimer.getElapsedNanoSeconds();
         searchOutput.clear();
+
         if(verboseEnabled) {
             System.out.println(indexName + " rangeSearch1 time (ns): " + rangeSearch1SkipListLns);
         }
@@ -1256,7 +1257,6 @@ public class Main {
 //            System.out.println(indexName + " rangeSearch2 end query MVSK, version[" + firstVersion + " - " + verEnd + "]" + ", Single key[" + keyStart + "]");
 //        }
 
-
         System.out.println(indexName + " rangeSearch3 start");
         myTimer.init();
         myTimer.start();
@@ -1271,7 +1271,6 @@ public class Main {
             System.out.println(indexName + " rangeSearch3 end query MVRK, version: [" + firstVersion + ", " + verEnd + "]" + ", range key[" + keyStart + ", " + keyEnd + "]");
         }
 
-
         System.out.println(indexName + " rangeSearch4 start");
         myTimer.init();
         myTimer.start();
@@ -1285,7 +1284,6 @@ public class Main {
         if(verboseEnabled) {
             System.out.println(indexName + " rangeSearch4 end query MVAK, version: [" + firstVersion + ", " + verEnd + "]" + ", range key[ ALL ]");
         }
-
 
         Map<String, Object> res = new HashMap<>();
         res.put("count", data.size());
