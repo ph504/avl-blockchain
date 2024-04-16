@@ -2,15 +2,10 @@ package approach4.temporal.AVL;
 import approach4.IRowDetails;
 import approach4.Utils;
 import approach4.temporal.skipList.ToweredTypeUtils;
-import approach4.typeUtils.IntegerClassUtils;
 import approach4.typeUtils.TableRowUtils;
 import approach4.valueDataStructures.TableRowIntDateCols;
 import approach4.valueDataStructures.Version;
-
-
 import java.util.*;
-
-import org.json4s.*;
 
 /**
  * logic: BST search,
@@ -24,19 +19,17 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
     private final int partitionCapacity;
     private VersionType currentVersion;
 
-     private Node<VersionType,KeyType,BucketRowType> head;
+    private Node<VersionType,KeyType,BucketRowType> head;
 
     private final ToweredTypeUtils<KeyType,BucketRowType> toweredTypeUtils;
 
 
-    // TODO add versioning
     public AVLTree(
                 VersionType initVersion,
                 int partitionCapacity,
                 ToweredTypeUtils<KeyType, BucketRowType> toweredTypeUtils) throws Exception {
         this.currentVersion = initVersion;
         this.partitionCapacity = partitionCapacity;
-        // this.head = new Node<>(initVersion, null);
         this.head = null;
         this.toweredTypeUtils = toweredTypeUtils;
     }
@@ -100,7 +93,7 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
                 currentNode.leftChild.parent = currentNode;
                 // Initialize the digest for the inserted node
                 currentNode.leftChild.processDigest(this.toweredTypeUtils);
-                   inspectInsertion(currentNode.leftChild, new ArrayList<Node<VersionType, KeyType, BucketRowType>>());
+                inspectInsertion(currentNode.leftChild, new ArrayList<Node<VersionType, KeyType, BucketRowType>>());
             }
             else upsert(key, row, currentNode.leftChild);
         
@@ -256,58 +249,6 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
         inspectDeletion(curNode.parent);
     }
 
-//    private void swapNodes(Node<VersionType, KeyType, BucketRowType> node, Node<VersionType, KeyType, BucketRowType> successor) throws Exception {
-//        System.out.println("Node: " + node.key + " | Successor: " + successor.key);
-//        // Handle successor's parent
-//        if (successor.parent != node) {
-//            successor.parent.leftChild = node;
-//            node.parent = successor.parent;
-//        }
-//        successor.parent = node.parent;
-//
-//        // Handle node's parent
-//        if (node.parent != null) {
-//            if (node.parent.leftChild == node) {
-//                node.parent.leftChild = successor;
-//            } else {
-//                node.parent.rightChild = successor;
-//            }
-//        } else {
-//            this.head = successor;
-//        }
-//
-//        // Swap left children
-//        successor.leftChild = node.leftChild;
-//        node.leftChild = null;
-//
-//        if (successor.leftChild != null) {
-//            successor.leftChild.parent = successor;
-//        }
-//
-//        // Swap right children
-//        if (successor == node.rightChild) {
-//            node.rightChild = null;
-//        }
-//        else {
-//            Node<VersionType, KeyType, BucketRowType> tmp = successor.rightChild;
-//            successor.rightChild = node.rightChild;
-//            node.rightChild = tmp;
-//
-//            if (node.rightChild != null) {
-//                node.rightChild.parent = node;
-//            }
-//        }
-//
-//        // Swap heights
-//        int tmpHeight = node.height;
-//        node.height = successor.height;
-//        successor.height = tmpHeight;
-//
-//        if (successor != node.rightChild) {
-//            deleteNode(node);
-//        }
-//    }
-
     private void inspectInsertion(Node<VersionType, KeyType, BucketRowType> curNode,
                                    ArrayList<Node<VersionType, KeyType, BucketRowType>> path) throws Exception {
         if (curNode.parent == null) return;
@@ -407,10 +348,6 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
 
         z.height = 1 + Math.max(getHeight(z.leftChild), getHeight(z.rightChild));
         y.height = 1 + Math.max(getHeight(y.leftChild), getHeight(y.rightChild));
-
-        // Update the digests of z and y (Since z is the child of y, we first update z)
-        // z.processDigest(this.toweredTypeUtils);
-        // y.processDigest(this.toweredTypeUtils);
     }
 
     private void leftRotate(Node<VersionType, KeyType, BucketRowType> z) throws Exception {
@@ -440,10 +377,6 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
 
         z.height = 1 + Math.max(getHeight(z.leftChild), getHeight(z.rightChild));
         y.height = 1 + Math.max(getHeight(y.leftChild), getHeight(y.rightChild));
-
-        // Update the digests of z and y (Since z is the child of y, we first update z)
-        // z.processDigest(this.toweredTypeUtils);
-        // y.processDigest(this.toweredTypeUtils);
     }
 
     private int getHeight(Node<VersionType, KeyType, BucketRowType> node) throws Exception {
@@ -481,6 +414,30 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
         Utils.checkVersions(this.currentVersion, nextVersion);
         this.currentVersion = nextVersion;
 //        System.out.println("Current version: " + this.currentVersion);
+    }
+
+    public void inorder_traversal(Node<VersionType, KeyType, BucketRowType> curNode) {
+        if (curNode != null) {
+            inorder_traversal(curNode.leftChild);
+            System.out.print(curNode.key + ", ");
+            inorder_traversal(curNode.rightChild);
+        }
+    }
+
+
+    public void balanced_sanity_check(Node<VersionType, KeyType, BucketRowType> curNode) throws Exception {
+        if (curNode != null) {
+            int leftHeight = getHeight(curNode.leftChild);
+            int rightHeight = getHeight(curNode.rightChild);
+
+            if (Math.abs(leftHeight - rightHeight) > 1) {
+                System.out.println("Imbalance at key: " + curNode.key);
+            } else {
+                // Check balance of both left and right subtrees and return true only if both are balanced
+                balanced_sanity_check(curNode.leftChild);
+                balanced_sanity_check(curNode.rightChild);
+            }
+        }
     }
 
     @Override
@@ -555,15 +512,8 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
         return content.toString();
     }
 
-//    public static AVLTree<VersionType, KeyType, BucketRowType> jsonToAVLTree(String filePath){
-//        AVLTree<VersionType, KeyType>
-//        return tree;
-//    }
-
 
     public static void demoRandomSamples(Scanner outputScanner) throws Exception{
-
-
         int partitionCapacity = 1;          // partitioning the DS within the table that stores versions
         // entails how many blocks within a partition
 
@@ -627,32 +577,32 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
 
         int partitionCapacity = 1;
 
-        int patientIDsCount = 8;            // number of patients being generated
-        int patientIDsPerDayCount = 8;
+        int patientIDsCount = 500;            // number of patients being generated
+        int patientIDsPerDayCount = 500;
         int datesCount = 1;                 // number of days
         int firstPatientID = 1;             // indexing patient IDs
 
         // get configs from user
-        while (true)
-            try {
-                in = promptUser(inputScanner,"partition capacity");
-                partitionCapacity = Integer.parseInt(in);
-
-                in = promptUser(inputScanner,"number of patientIDs");
-                patientIDsCount = Integer.parseInt(in);
-
-                in = promptUser(inputScanner,"number of patientIDs per version");
-                patientIDsPerDayCount = Integer.parseInt(in);
-
-                in = promptUser(inputScanner,"number of versions");
-                datesCount = Integer.parseInt(in);
-
-                in = promptUser(inputScanner,"first patient ID");
-                firstPatientID = Integer.parseInt(in);
-                break;
-            } catch (RuntimeException e){
-                if (in.equals("skip")) break;
-            }
+//        while (true)
+//            try {
+//                in = promptUser(inputScanner,"partition capacity");
+//                partitionCapacity = Integer.parseInt(in);
+//
+//                in = promptUser(inputScanner,"number of patientIDs");
+//                patientIDsCount = Integer.parseInt(in);
+//
+//                in = promptUser(inputScanner,"number of patientIDs per version");
+//                patientIDsPerDayCount = Integer.parseInt(in);
+//
+//                in = promptUser(inputScanner,"number of versions");
+//                datesCount = Integer.parseInt(in);
+//
+//                in = promptUser(inputScanner,"first patient ID");
+//                firstPatientID = Integer.parseInt(in);
+//                break;
+//            } catch (RuntimeException e){
+//                if (in.equals("skip")) break;
+//            }
 
 
 
@@ -676,7 +626,7 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
                 in = promptUser(inputScanner,"dates. type \"done\" when you are");
                 keys.add(Integer.parseInt(in));
             } catch (RuntimeException e) {
-                if(in.equals("skip")){
+                if(in.equals("s")){
                     // equivalent to range list in python.
                     int init = firstPatientID, step=1, count = patientIDsCount;
                     ArrayList<Integer> list = new ArrayList<>();
@@ -722,38 +672,42 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
     public static void output(Scanner outputScanner, int patientIDsCount, List<TableRowIntDateCols> data_, Date currentVersion, AVLTree<Date, Integer, TableRowIntDateCols> index) throws Exception {
         String out="";
         // Print the dataset
-        for (TableRowIntDateCols row : data_) {
+//        for (TableRowIntDateCols row : data_) {
 //            System.out.println(row.col1 + ", " + row.col2);
-        }
+//        }
 
         insert(data_, currentVersion, index, true);
 
+//        index.inorder_traversal(index.head);
+//        System.out.println();
+//        index.balanced_sanity_check(index.head);
+
         // Delete
-        int delKey;
-        Random random = new Random();
-        TableRowIntDateCols del_row = null;
-
-        while (true) {
-            try {
-                out = promptUser(outputScanner, "what key to delete");
-                delKey = Integer.parseInt(out);
-                del_row = index.delete(delKey);
-
-            } catch (RuntimeException e) {
-                if(out.equals("skip")){
-                    del_row = index.delete(random.nextInt(patientIDsCount) + 1);
-                    break;
-                }
-                else {
-                    System.err.println("command not valid.");
-                }
-
-            }
-            break;
-        }
-
-        System.out.println(del_row);
-        System.out.println(index);
+//        int delKey;
+//        Random random = new Random();
+//        TableRowIntDateCols del_row = null;
+//
+//        while (true) {
+//            try {
+//                out = promptUser(outputScanner, "what key to delete");
+//                delKey = Integer.parseInt(out);
+//                del_row = index.delete(delKey);
+//
+//            } catch (RuntimeException e) {
+//                if(out.equals("skip")){
+//                    del_row = index.delete(random.nextInt(patientIDsCount) + 1);
+//                    break;
+//                }
+//                else {
+//                    System.err.println("command not valid.");
+//                }
+//
+//            }
+//            break;
+//        }
+//
+//        System.out.println(del_row);
+//        System.out.println(index);
 
         // Randomly update 20% of the shuffled rows
 //        int totalRowsToUpdate = (int) (data_.size() * 0.2);
@@ -803,7 +757,7 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
 
     private static String promptUser(Scanner scanner, String prompt){
         System.out.println("type \"skip\" to skip this step.");
-        System.out.print("input" + prompt + ": ");
+        System.out.print("input " + prompt + ": ");
         return scanner.nextLine();
     }
 

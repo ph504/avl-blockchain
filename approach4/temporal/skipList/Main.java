@@ -18,6 +18,7 @@ import org.apache.directory.mavibot.btree.exception.KeyNotFoundException;
 import org.apache.directory.mavibot.btree.serializer.LongSerializer;
 import org.apache.directory.mavibot.btree.serializer.StringSerializer;
 
+import javax.sound.midi.SysexMessage;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -164,9 +165,9 @@ public class Main {
         // Starts off everything
         collectEvaluationResultsScenario2(logPrefix, logPostfix, itemsCounts, versionsCounts, runs, keysPercentsCounts);
 
-        String collectEvaluationResults3InputCsvFilePath = prop.getProperty("collectEvaluationResults3InputCsvFilePath");
-        double collectEvaluationResults3keysPercentsCounts = Double.parseDouble(prop.getProperty("collectEvaluationResults3keysPercentsCounts"));
-        CsvReader csvReader = new CsvReader(collectEvaluationResults3InputCsvFilePath);
+//        String collectEvaluationResults3InputCsvFilePath = prop.getProperty("collectEvaluationResults3InputCsvFilePath");
+//        double collectEvaluationResults3keysPercentsCounts = Double.parseDouble(prop.getProperty("collectEvaluationResults3keysPercentsCounts"));
+//        CsvReader csvReader = new CsvReader(collectEvaluationResults3InputCsvFilePath);
 //        collectEvaluationResultsScenario33(logPrefix, logPostfix, collectEvaluationResults3keysPercentsCounts, csvReader);
 
 
@@ -304,6 +305,10 @@ public class Main {
             ArrayList<String[]> lineSplits = aggLines.get(key);
 //            lineSplits.remove(0);
 
+            if (lineSplits.size() > 1) {
+                lineSplits.remove(0);
+            }
+
             ArrayList<Object> aggLine = new ArrayList<>();
             String[] firstLineSplit = lineSplits.get(0);
             for (int i = 0; i < colsCount; i++) {
@@ -318,8 +323,16 @@ public class Main {
             for (String[] lineSplit : lineSplits) {
                 for (int i = 0; i < colsCount; i++) {
                     if (!aggKey.contains(i)) {
-                        double val = Double.parseDouble(lineSplit[i]);
-                        aggLine.set(i, val + (double) aggLine.get(i));
+                        try {
+                            double val = Double.parseDouble(lineSplit[i]);
+                            aggLine.set(i, val + (double) aggLine.get(i));
+                        } catch (NumberFormatException e) {
+                            // System.err.println("Invalid double format for entry, using default 0.0: " + lineSplit[i]);
+                            aggLine.set(i, 0.0 + (double) aggLine.get(i));
+                        } catch (NullPointerException e) {
+                            // System.err.println("Null entry found, using default 0.0 for column index: " + i);
+                            aggLine.set(i, 0.0 + (double) aggLine.get(i));
+                        }
                     }
                 }
             }
@@ -372,7 +385,7 @@ public class Main {
 
     /*
      This function generates a list of versioned data from a list of strings strArr and a specified number of versions versionsCount.
-     Each string in strArr is converted into a TableRowStrIntCols object <string columnNo, integer columnNo, ITypeUtils for type operations> 
+     Each string in strArr is converted into a TableRowStrIntCols object <string columnNo, integer columnNo, ITypeUtils for type operations>
      All these rows are duplicated across the number of versions specified.
      */
     private static ArrayList<ArrayList<TableRowStrIntCols>> generateVersions(List<String> strArr, int versionsCount) {
@@ -844,7 +857,7 @@ public class Main {
         HashMap<String, Object> settings = new HashMap<>();
 
         settings.put("runsCount", runs);
-        settings.put("MBTCapacity", 10000); // This? 
+        settings.put("MBTCapacity", 10000); // This?
         settings.put("temporalIndexCapacity", 20); // This?
         // the fact that this is set here not in config is shaabaash.
         // imagine :D
@@ -976,13 +989,14 @@ public class Main {
         ToweredTypeUtils<Integer, TableRowIntDateCols> tableIntDateColsIndexTypeUtils = getTableIntDateColsIndexTypeUtils();
 
         for (int runs = 0; runs < runsCount; runs++) {
-            // data = List<patientID, date> 
+            // data = List<patientID, date>
             ArrayList<TupleTwo<Integer, Date>> data = getSyntheticMedicalDataSet(totalRowsCount, startLocalDate, datesCount, firstPatientID, patientsPerDateRatio);
 
             HashSet<Date> versions_ = new HashSet<>();
             for (TupleTwo<Integer, Date> row : data) {
                 versions_.add(row.second); // versions_ is a set/list of dates
             }
+            System.out.println(data.size());
 
             // sorting versions_
             List<Date> versions = versions_.stream()
@@ -994,7 +1008,7 @@ public class Main {
             // Wrapping each row in data with <TableRowIntDateCols> class
             List<TableRowIntDateCols> data_ = getTableRowIntDateCols(data, tableIntDateColsIndexTypeUtils);
 
-            IIndexMVIntDate index = null;
+            IIndexMVIntDate index;
 //            index = new PatriciaMerkleTrieMVIntDateWrapper();
 //            Map<String, Object> patriciaMerkleTrieRunRes = SearchMVScenarios("patriciaMerkleTrieIndex", index, data_, percent);
 //            writeScenarioResultsToFile(pathPatriciaMerkleTrieScenario, patriciaMerkleTrieRunRes);
@@ -1003,22 +1017,31 @@ public class Main {
 //            Map<String, Object> merkleBucketIndexRunRes = SearchMVScenarios("merkleBucketTreeIndex", index, data_, percent);
 //            writeScenarioResultsToFile(pathMerkleBucketScenario, merkleBucketIndexRunRes);
 
-            // WDYM temporal capacity
             ToweredSkipList.MAX_LEVEL = temporalIndexCapacity;
 
             // instantiate the DS that maps version nodes in an avl tree to bitmaps of keys
             // inputs to constructor: initversion=firstversion and keyscapacity=data.size()
             IVersionsToKeysIndex<Date, Integer> versionsToKeysIndex = new VersionsToKeysIndex<>(firstVersion, data.size());
 
-            // idk why we wrapped but okay ig?
-            // XMVSL
-            // <
-            //  KVER extends Comparable<KVER>,
-            //  K extends Comparable<K>,
-            //  V extends IRowDetails<K,V,KVER>
-            // the naming convention is... we could use V for version and R for rows?
-            // >
-//            System.out.println("skiplist");
+            // AVL TREE
+            index = new XAVLTree(
+                    firstVersion,
+                    versionsToKeysIndex,            // the DS for mapping
+                    partitionCapacity,              // partitionCapacity=0 here.
+                    tableIntDateColsIndexTypeUtils
+            );
+            Map<String, Object> avlTreeIndexRes =
+                    SearchMVScenarios(
+                            "avlTreeIndex",
+                            index,
+                            data_,
+                            percent,
+                            false);
+            writeScenarioResultsToFile(pathAVLTreeScenario, avlTreeIndexRes);
+
+            // SKIP-LIST
+            versionsToKeysIndex = new VersionsToKeysIndex<>(firstVersion, data.size());
+            data_ = getTableRowIntDateCols(data, tableIntDateColsIndexTypeUtils);
             index = new SkipListMVIntDateWrapper(
                     firstVersion,
                     // the probability to build a new level
@@ -1041,46 +1064,25 @@ public class Main {
                             false);
             writeScenarioResultsToFile(pathTempSkipListScenario, skipListIndexRunRes);
 
-            versionsToKeysIndex = new VersionsToKeysIndex<>(firstVersion, data.size());
-//            System.out.println("avl tree");
-
-            data_ = getTableRowIntDateCols(data, tableIntDateColsIndexTypeUtils);
-
-            // AVL Index Code
-            index = new XAVLTree(
-                    firstVersion,
-                    versionsToKeysIndex,            // the DS for mapping
-                    partitionCapacity,              // partitionCapacity=0 here.
-                    tableIntDateColsIndexTypeUtils
-            );
-            Map<String, Object> avlTreeIndexRes =
-                    SearchMVScenarios(
-                            "tableStrIntColsSkipListIndex",
-                            index,
-                            data_,
-                            percent,
-                            true);
-            writeScenarioResultsToFile(pathAVLTreeScenario, avlTreeIndexRes);
-
-            index = new PHTreeIntDateWrapper();
-            Map<String, Object> phTreeIndexRunRes =
-                    SearchMVScenarios(
-                            "phTreeIndex",
-                            index,
-                            data_,
-                            percent,
-                            false);
-            writeScenarioResultsToFile(pathPhTreeIndexScenario, phTreeIndexRunRes);
-
-            index = new MerkleKDTreeIntDateWrapper();
-            Map<String, Object> merkleKDTreeIndexRunRes =
-                    SearchMVScenarios(
-                            "merkleKDTreeIndex",
-                            index,
-                            data_,
-                            percent,
-                            false);
-            writeScenarioResultsToFile(pathMerkleKDTreeIndexScenario, merkleKDTreeIndexRunRes);
+//            index = new PHTreeIntDateWrapper();
+//            Map<String, Object> phTreeIndexRunRes =
+//                    SearchMVScenarios(
+//                            "phTreeIndex",
+//                            index,
+//                            data_,
+//                            percent,
+//                            false);
+//            writeScenarioResultsToFile(pathPhTreeIndexScenario, phTreeIndexRunRes);
+//
+//            index = new MerkleKDTreeIntDateWrapper();
+//            Map<String, Object> merkleKDTreeIndexRunRes =
+//                    SearchMVScenarios(
+//                            "merkleKDTreeIndex",
+//                            index,
+//                            data_,
+//                            percent,
+//                            false);
+//            writeScenarioResultsToFile(pathMerkleKDTreeIndexScenario, merkleKDTreeIndexRunRes);
 
 
             // TODO find scenario to strictly increasing keys only, which can use VersionsToConsecutiveKeysIndex
@@ -1162,8 +1164,8 @@ public class Main {
     }
 
     public static Map<String, Object> SearchMVScenarios(String indexName, IIndexMVIntDate index, List<TableRowIntDateCols> data, double percent, boolean verboseEnabled) throws Exception {
-        if (verboseEnabled)
-            System.out.println(indexName);
+//        if (verboseEnabled)
+////            System.out.println(indexName);
         if (verboseEnabled)
             System.out.println("---------------------------------------\n" + index);
 
@@ -1189,11 +1191,11 @@ public class Main {
         Date firstVersion = versions.get(0);
         Date currentVersion = firstVersion;
 
-        int keysArrFractionCount = (int) (keys.size() * percent);
-
+        int keysArrFractionCount = (int) Math.max(1, (keys.size() * percent));
         int versionsFractionCount = (int) Math.max(1, versions.size() * percent);
+        Date verEnd = versions.get(versionsFractionCount - 1);
 
-    // -------------------------------------------------------------------------------------- commit
+        // -------------------------------------------------------------------------------------- commit
         System.out.println(indexName + " insert-commit start");
         myTimer.start();
 
@@ -1204,21 +1206,21 @@ public class Main {
                 index.commitCurrentVersion(currentVersion);
             }
             index.insert(row);
-            System.out.println("\n" + index);
         }
-
         index.finalizeInsert();
 
         myTimer.pause();
         double insertLs = myTimer.getElapsedSeconds();
         double insertTPs = ((double) (data.size())) / ((double) insertLs);
-        System.out.println(indexName + " insert-commit time (s): " + insertLs);
+        if(verboseEnabled) {
+            System.out.println(indexName + " insert-commit time (s): " + insertLs);
+        }
 
         List<Integer> keysArrFirstFractionSortedElements = keys.stream().sorted().limit(keysArrFractionCount).collect(Collectors.toList());
         Integer keyStart = keysArrFirstFractionSortedElements.get(0);
         Integer keyEnd = keysArrFirstFractionSortedElements.get(keysArrFirstFractionSortedElements.size() - 1);
-//        System.out.println("---------------------------------------\n"+index);
-    // -------------------------------------------------------------------------------------- commit
+
+
         System.out.println(indexName + " rangeSearch1 start");
         ArrayList<IRowDetails<Integer, TableRowIntDateCols, Date>> searchOutput = new ArrayList<>(keys.size());
         //slr, idk what it stood for. renamed to search output.
@@ -1228,27 +1230,32 @@ public class Main {
         myTimer.pause();
         double rangeSearch1SkipListLns = myTimer.getElapsedNanoSeconds();
         searchOutput.clear();
-        System.out.println(indexName + " rangeSearch1 time (ns): " + rangeSearch1SkipListLns);
-        System.out.println(indexName + " rangeSearch1 end query svrk, version:" + firstVersion + " range key[" + keyStart + "," + keyEnd + "]");
-//        System.out.println("---------------------------------------\n" + index);
-    // -------------------------------------------------------------------------------------- commit
+        if(verboseEnabled) {
+            System.out.println(indexName + " rangeSearch1 time (ns): " + rangeSearch1SkipListLns);
+        }
+        if (verboseEnabled) {
+            System.out.println(indexName + " rangeSearch1 end query SVRK, version: " + firstVersion + ", range key[" + keyStart + "," + keyEnd + "]");
+        }
 
-        System.out.println(indexName + " rangeSearch2 start");
-        // output in searchOutput
-        // slr, idk what it stood for. renamed to searcOutput.
-        myTimer.init();
-        myTimer.start();
-        Date verEnd = versions.get(versionsFractionCount - 1);
-        // verStart = first version.
-        index.rangeSearch2(firstVersion, verEnd, keyStart, searchOutput);
-        myTimer.pause();
-        double rangeSearch2SkipListLns = myTimer.getElapsedNanoSeconds();
-        // clear list to use for the next search results
-        searchOutput.clear();
-        System.out.println(indexName + " rangeSearch2 time (ns): " + rangeSearch2SkipListLns);
-        System.out.println(indexName + " rangeSearch2 end query mv, version[" + firstVersion + "," + verEnd + "]" + " range key[" + keyStart + "]");
-//        System.out.println("---------------------------------------\n" + index);
-    // -------------------------------------------------------------------------------------- commit
+
+//        System.out.println(indexName + " rangeSearch2 start");
+//        // Renamed slr to searchOutput.
+//        myTimer.init();
+//        myTimer.start();
+//
+//        // verStart = first version.
+//        index.rangeSearch2(firstVersion, verEnd, keyStart, searchOutput);
+//        myTimer.pause();
+//        double rangeSearch2SkipListLns = myTimer.getElapsedNanoSeconds();
+//        // clear list to use for the next search results
+//        searchOutput.clear();
+//        if(verboseEnabled) {
+//            System.out.println(indexName + " rangeSearch2 time (ns): " + rangeSearch2SkipListLns);
+//        }
+//        if (verboseEnabled) {
+//            System.out.println(indexName + " rangeSearch2 end query MVSK, version[" + firstVersion + " - " + verEnd + "]" + ", Single key[" + keyStart + "]");
+//        }
+
 
         System.out.println(indexName + " rangeSearch3 start");
         myTimer.init();
@@ -1257,10 +1264,13 @@ public class Main {
         myTimer.pause();
         double rangeSearch3SkipListLms = myTimer.getElapsedMilliSeconds();
         searchOutput.clear();
-        System.out.println(indexName + " rangeSearch3 time (ms): " + rangeSearch3SkipListLms);
-        System.out.println(indexName + " rangeSearch3 end query mv, version[" + firstVersion + "," + verEnd + "]" + " range key[" + keyStart + "," + keyEnd + "]");
-//        System.out.println("---------------------------------------\n" + index);
-    // -------------------------------------------------------------------------------------- commit
+        if(verboseEnabled) {
+            System.out.println(indexName + " rangeSearch3 time (ms): " + rangeSearch3SkipListLms);
+        }
+        if (verboseEnabled) {
+            System.out.println(indexName + " rangeSearch3 end query MVRK, version: [" + firstVersion + ", " + verEnd + "]" + ", range key[" + keyStart + ", " + keyEnd + "]");
+        }
+
 
         System.out.println(indexName + " rangeSearch4 start");
         myTimer.init();
@@ -1269,10 +1279,13 @@ public class Main {
         myTimer.pause();
         double rangeSearch4SkipListLms = myTimer.getElapsedMilliSeconds();
         searchOutput.clear();
-        System.out.println(indexName + " rangeSearch4 time (ms): " + rangeSearch4SkipListLms);
-        System.out.println(indexName + " rangeSearch3 end query mv, version[" + firstVersion + "," + verEnd + "]" + " range key[ all keys ]");
-//        System.out.println("---------------------------------------\n" + index);
-    // -------------------------------------------------------------------------------------- commit
+        if(verboseEnabled) {
+            System.out.println(indexName + " rangeSearch4 time (ms): " + rangeSearch4SkipListLms);
+        }
+        if(verboseEnabled) {
+            System.out.println(indexName + " rangeSearch4 end query MVAK, version: [" + firstVersion + ", " + verEnd + "]" + ", range key[ ALL ]");
+        }
+
 
         Map<String, Object> res = new HashMap<>();
         res.put("count", data.size());
@@ -1281,6 +1294,7 @@ public class Main {
         res.put("insertLs", insertLs);
         res.put("insertTPs", insertTPs);
         res.put("rangeSearch1SkipListLns", rangeSearch1SkipListLns);
+//         res.put("rangeSearch2SkipListLns", rangeSearch2SkipListLns);
         res.put("rangeSearch3SkipListLms", rangeSearch3SkipListLms);
         res.put("rangeSearch4SkipListLms", rangeSearch4SkipListLms);
 
@@ -1913,6 +1927,7 @@ public class Main {
         int patientIDsSize = (int) ((totalRowsCount / datesCount) / patientsPerDateRatio);
         int patientIDsPerDayCount = (int) (patientIDsSize * patientsPerDateRatio);
 
+        System.out.println("TotalRows: " + totalRowsCount + ", DatesCount: " + datesCount + ", Ratio: " + patientsPerDateRatio + ", Keys: " + patientIDsSize);
         ArrayList<TupleTwo<Integer, Date>> res = new ArrayList<>();
 
         LocalDate currentLocalDate = startLocalDate;

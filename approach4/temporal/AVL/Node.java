@@ -13,7 +13,6 @@ import java.time.LocalDate;
 import java.time.Month;
 import java.time.ZoneId;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class Node<KVER extends Comparable<KVER>,K extends Comparable<K>, V extends IRowDetails<K, V, KVER>> {
     public Node<KVER,K,V> leftChild, rightChild, parent;
@@ -61,35 +60,34 @@ public class Node<KVER extends Comparable<KVER>,K extends Comparable<K>, V exten
 
     public void processDigest(ToweredTypeUtils<K,V> toweredTypeUtils) throws Exception {
         this.digest = getNodeDigest(this, toweredTypeUtils);
-        // System.out.println("Recalculated digest of node: " + this.key + ", lChild: " + this.leftChild.key + ", rChild: " + this.rightChild.key);
-
-        StringBuilder sb = new StringBuilder("Recalculated digest of node: ");
-        sb.append(this.key);
-
-        sb.append(", lChild: ");
-        if (this.leftChild != null) {
-            sb.append(this.leftChild.key);
-        } else {
-            sb.append("null");
-        }
-
-        sb.append(", rChild: ");
-        if (this.rightChild != null) {
-            sb.append(this.rightChild.key);
-        } else {
-            sb.append("null");
-        }
+//        System.out.println("Recalculated digest of node: " + this.key + ", lChild: " + this.leftChild.key + ", rChild: " + this.rightChild.key);
+//
+//        StringBuilder sb = new StringBuilder("Recalculated digest of node: ");
+//        sb.append(this.key);
+//
+//        sb.append(", lChild: ");
+//        if (this.leftChild != null) {
+//            sb.append(this.leftChild.key);
+//        } else {
+//            sb.append("null");
+//        }
+//
+//        sb.append(", rChild: ");
+//        if (this.rightChild != null) {
+//            sb.append(this.rightChild.key);
+//        } else {
+//            sb.append("null");
+//        }
 //        System.out.println(sb);
-
-        for (byte b : this.digest) {
+//
+//        for (byte b : this.digest) {
 //            System.out.printf("%02X ", b);
-        }
+//        }
 //        System.out.println();
     }
 
     public static <KVER extends Comparable<KVER>,K extends Comparable<K>,V extends IRowDetails<K, V, KVER>>
     byte[] getKeyValueDigest(K curNodeKey, Partitions<K,V,KVER> curNodeValue, ToweredTypeUtils<K,V> toweredTypeUtils) throws Exception {
-        // TODO: What is going on here?
         byte[] curNodeKeyDigest = Utils.getNullableObjectHash(curNodeKey, toweredTypeUtils.kTypeUtils);
         byte[] curNodeValueDigest = curNodeValue.getRootDigest();
         return Utils.getHash(curNodeKeyDigest, curNodeValueDigest);
