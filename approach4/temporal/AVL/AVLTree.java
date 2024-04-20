@@ -752,7 +752,7 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
         Scanner s = new Scanner(System.in);
 //        demoRandomSamples(s);
 
-        demoInput(s,s);
+//        demoInput(s,s);
     }
 
     private static String promptUser(Scanner scanner, String prompt){

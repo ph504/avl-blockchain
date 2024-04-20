@@ -1,6 +1,7 @@
 package approach4.temporal;
 
 import approach4.IRowDetails;
+import approach4.MyTimer;
 import approach4.TupleTwo;
 import approach4.Utils;
 import approach4.temporal.AVL.AVLTree;
@@ -71,7 +72,6 @@ public class XAVLTree implements IIndexMVIntDate {
 
     @Override
     public void insert(TableRowIntDateCols row) throws Exception {
-//        System.out.println("hello");
         this.avlTree.upsert(row);
         Integer key = row.getKey();
         this.versionsToKeysIndex.add(key);
@@ -225,6 +225,112 @@ public class XAVLTree implements IIndexMVIntDate {
 
     }
 
+//    public int optimizedSearchTraversal(Node<Date, Integer, TableRowIntDateCols> root,
+//                                  List<Integer> sortedKeys,
+//                                  Integer keyIndex,
+//                                  Date verStart,
+//                                  Date verEnd,
+//                                  ArrayList<IRowDetails<Integer, TableRowIntDateCols, Date>> foundRows,
+//                                  Integer maxKey) throws Exception {
+//
+//        if (root == null) return keyIndex;
+//
+//        if (keyIndex >= sortedKeys.size()) return keyIndex;
+//
+//        Integer currentKey = sortedKeys.get(keyIndex);
+//
+//        // Move left if the current key is smaller than the root key
+//        if (currentKey.compareTo(root.key) < 0) {
+//            // System.out.println("Moving left from " + root.key + ", MaxKey: " + maxKey);
+//            if (maxKey == null || root.key.compareTo(maxKey) > 0) maxKey = root.key;
+//            keyIndex = optimizedSearchTraversal(root.leftChild, sortedKeys, keyIndex, verStart, verEnd, foundRows, maxKey);
+//
+//            if (keyIndex >= sortedKeys.size()) return keyIndex;
+//            currentKey = sortedKeys.get(keyIndex);
+//        }
+//
+//        // Process the current root if it matches the current key
+//        if (currentKey.compareTo(root.key) == 0) {
+//            // System.out.println("Processing node " + root.key + ", MaxKey: " + maxKey);
+//            root.value.search(verStart, verEnd, foundRows);
+//
+//            // Move to the next key
+//            keyIndex++;
+//
+//            if (keyIndex >= sortedKeys.size()) return keyIndex;
+//            currentKey = sortedKeys.get(keyIndex);
+//        }
+//
+//        // Move right if the current key is greater than the root key or after processing a node
+//        if (currentKey.compareTo(root.key) > 0) {
+//            // root.key < maxKey < currentKey
+//            if (!(maxKey != null && root.key.compareTo(maxKey) < 0 && maxKey.compareTo(currentKey) <= 0)) {
+//                // System.out.println("Moving right from node " + root.key + ", MaxKey: " + maxKey);
+//                if (maxKey == null || root.key.compareTo(maxKey) > 0) maxKey = root.key;
+//                keyIndex = optimizedSearchTraversal(root.rightChild, sortedKeys, keyIndex, verStart, verEnd, foundRows, maxKey);
+//            }
+//        }
+//        return keyIndex;
+//    }
+
+    /**
+     * Optimized traversal for searching specific keys and processing them.
+     * @param root Current node in the AVL tree being examined.
+     * @param sortedKeys List of keys that need to be searched in the tree.
+     * @param keyIndex Current index in the list of sorted keys.
+     * @param foundRows List to store the rows associated with the keys found.
+     * @param maxKey Maximum key encountered on the left path to root, used to optimize right subtree traversal.
+     * @return The index of the next key to be processed.
+     */
+    public int optimizedSearchTraversal(Node<Date, Integer, TableRowIntDateCols> root,
+                                        List<Integer> sortedKeys,
+                                        Integer keyIndex,
+                                        Date verStart,
+                                        Date verEnd,
+                                        ArrayList<IRowDetails<Integer, TableRowIntDateCols, Date>> foundRows,
+                                        Integer minKey,
+                                        Integer maxKey) throws Exception {
+        if (root == null || keyIndex >= sortedKeys.size()) return keyIndex;
+
+        Integer currentKey = sortedKeys.get(keyIndex);
+
+        // Skip entire left subtree if no keys could be in it
+        if (minKey != null && currentKey < minKey) {
+            return keyIndex;
+        }
+
+        // Traverse left subtree if it may contain keys
+        if (currentKey < root.key) {
+//            System.out.println("Moving left from " + root.key + ", minKey: " + minKey + ", maxKey: " + maxKey);
+            keyIndex = optimizedSearchTraversal(root.leftChild, sortedKeys, keyIndex, verStart, verEnd, foundRows, minKey, root.key);
+            if (keyIndex >= sortedKeys.size()) return keyIndex;
+            currentKey = sortedKeys.get(keyIndex);
+        }
+
+        // Process current node if it matches the current key
+        if (currentKey.equals(root.key)) {
+//            System.out.println("Processing " + root.key + ", minKey: " + minKey + ", maxKey: " + maxKey);
+            root.value.search(verStart, verEnd, foundRows);
+            keyIndex++;
+            if (keyIndex >= sortedKeys.size()) return keyIndex;
+            currentKey = sortedKeys.get(keyIndex);
+        }
+
+        // Skip entire right subtree if no keys could be in it
+        if (maxKey != null && currentKey >= maxKey) {
+            return keyIndex;
+        }
+
+        // Traverse right subtree if it may contain keys
+        if (currentKey > root.key) {
+//            System.out.println("Moving right from " + root.key + ", minKey: " + minKey + ", maxKey: " + maxKey);
+            keyIndex = optimizedSearchTraversal(root.rightChild, sortedKeys, keyIndex, verStart, verEnd, foundRows, root.key, maxKey);
+        }
+
+        return keyIndex;
+    }
+
+
     @Override
     public void rangeSearch1(
             Date version,
@@ -315,10 +421,13 @@ public class XAVLTree implements IIndexMVIntDate {
 
         Utils.assertTrue(verStart.compareTo(verEnd) <= 0, "should be true");
         Set<Integer> keys = versionsToKeysIndex.getKeys(verStart, verEnd);
+//        System.out.println("Searchable Keys: " + keys.size());
 
-        for(Integer key: keys){
-            rangeSearch2(verStart, verEnd, key, outputRows);
-        }
+        int keyIndex = optimizedSearchTraversal(avlTree.getHead(), new ArrayList<>(keys), 0, verStart, verEnd, outputRows, null, null);
+
+//        for (Integer key : keys) {
+//            rangeSearch2(verStart, verEnd, key, outputRows);
+//        }
 
     }
 
@@ -341,247 +450,249 @@ public class XAVLTree implements IIndexMVIntDate {
     }
 
     // running the demo
-    public static void main(String[] args) throws Exception {
-        int partitionCapacity = 1;          // partitioning the DS within the table that stores versions
-        // entails how many blocks within a partition
-
-        int patientIDsCount = 100;              // number of patients being generated
-        int patientIDsPerDayCount = 50;
-        int datesCount = 1;                   // number of days
-        int firstPatientID = 1;                 // indexing patient IDs
-
-        List<Date> versions = TableRowUtils.genVersions(datesCount);
-        // gen keys
-        ArrayList<Integer> patientIDs =
-                genSortedNums(
-                        firstPatientID,
-                        1,
-                        patientIDsCount);
-
-//        System.out.println(patientIDs);
-
-        ToweredTypeUtils<Integer, TableRowIntDateCols> tableRowUtils =
-                TableRowUtils.getUtils();
-
-        List<TableRowIntDateCols> data_ =
-                TableRowUtils.getTableRowIntDateCols(
-                        versions,
-                        patientIDs,
-                        patientIDsPerDayCount,
-                        tableRowUtils);
-
-        /*
-         * versions
-         * data_
-         * tableRowUtils
-         */
-
-        Date firstVersion = versions.get(0);
-        Date currentVersion = firstVersion;
-
-        Collections.sort(versions);
-        Collections.sort(patientIDs);
-
-        IVersionsToKeysIndex<Date,Integer> versionsToKeysIndex = new VersionsToKeysIndex(firstVersion, patientIDsCount);
-        XAVLTree xtree = new XAVLTree(firstVersion, versionsToKeysIndex, partitionCapacity, tableRowUtils);
-
-        insert(data_, currentVersion, xtree, false);
-        System.out.println(xtree);
-
-
-        queryTest(versions, patientIDs, xtree, 50);
-
-        for (int i = 1; i < patientIDsCount+1; i++) {
-            System.out.println(i);
-            System.out.println(xtree);
-            xtree.delete(i);
-        }
-    }
-
-
-
-//    utility functions
-    // ---------------------------------------------------------------------------
-
-    /**
-     * Function to generate a random key from the provided list of keys
-     * @param keys
-     * @return
-     */
-    private static Integer getRandomKey(ArrayList<Integer> keys) {
-        Random random = new Random();
-        return keys.get(random.nextInt(keys.size()-1));
-    }
-
-    /**
-     * Function to ensure that the end range is greater than the start range
-     * keys has to be sorted.
-     * @param startKey
-     * @param keys
-     * @return
-     */
-    private static int getRandomKey(int startKey, ArrayList<Integer> keys) {
-        Random random = new Random();
-        int keyStartIndex = keys.indexOf(startKey);
-        int keyEndIndex = random.nextInt(keys.size()-keyStartIndex-1)+keyStartIndex+1;
-
-        return keys.get(keyEndIndex);
-    }
-
-    /**
-     * Function to generate a random version from the provided list of versions
-     * @param versions
-     * @return
-     */
-    private static Date getRandomVersion(List<Date> versions) {
-        return getRandomVersion(versions, 0,versions.size());
-    }
-    /**
-     *
-     * @param versions
-     * @param startRange
-     * @param endRange
-     * @return
-     */
-    private static Date getRandomVersion(List<Date> versions, int startRange, int endRange){
-        Random random = new Random();
-        return versions.get(random.nextInt(endRange - startRange)+startRange);
-    }
-
-    /**
-     * Function to ensure that the end version is greater than the start version
-     * @param versions
-     * @return
-     */
-    private static TupleTwo<Date, Date> getRandomRangeVersions(List<Date> versions) {
-        return getRandomRangeVersions(versions, 0, versions.size());
-    }
-
-    /**
-     * this function requires the versions list to be sorted in ascending order.
-     * @param versions
-     * @param startRange
-     * @param endRange
-     * @return
-     */
-    private static TupleTwo<Date, Date> getRandomRangeVersions(List<Date> versions, int startRange, int endRange) {
-        Date randVer1 = getRandomVersion(versions, startRange, endRange);
-        Date randVer2 = getRandomVersion(versions, versions.indexOf(randVer1), endRange);
-        TupleTwo<Date, Date> tuple = new TupleTwo<>(randVer1, randVer2);
-        return tuple;
-    }
-
-    /**
-     *
-     * @param init
-     * @param step
-     * @param count
-     * @return
-     */
-    public static ArrayList<Integer> genSortedNums(int init, int step, int count) {
-        // equivalent to range list in python.
-        ArrayList<Integer> list = new ArrayList<>();
-        int cur = init;
-        for (int i = 0; i< count; i++) {
-            list.add(cur);
-            cur += step;
-        }
-        return list;
-    }
-
-    // ---------------------------------------------------------------------------
-    //    test functions
-    // ---------------------------------------------------------------------------
-
-    /**
-     * insert
-     * @param data_
-     * @param currentVersion
-     * @param xtree
-     * @param verbose
-     * @throws Exception
-     */
-    public static void insert(
-            List<TableRowIntDateCols> data_,
-            Date currentVersion,
-            XAVLTree xtree,
-            boolean verbose)
-            throws Exception {
-        // Insert the dataset
-        HashSet keySet = new HashSet<>();
-        for (TableRowIntDateCols row : data_) {
-            if(verbose) System.out.println(row.col1 + " | " + row.col2);
-            // if new version immediately commit previous one
-            if (!currentVersion.equals(row.col2)) {
-                currentVersion = row.col2;
-                xtree.commitCurrentVersion(currentVersion);
-            }
-            if(keySet.contains(row.getKey()))
-                xtree.update(row);
-            else {
-                xtree.insert(row);
-                keySet.add(row.getKey());
-            }
-            // Print the tree
-            if(verbose) System.out.println(xtree);
-        }
-    }
-
-    /**
-     * query
-     * @param versions
-     * @param patientIDs
-     * @param xtree
-     * @throws Exception
-     */
-    private static void queryTest(List<Date> versions, ArrayList<Integer> patientIDs, XAVLTree xtree, int iterationCount)
-            throws Exception {
-        for (int i = 0; i < iterationCount; i++) {
-            TupleTwo<Date, Date> randomRangeVersions = getRandomRangeVersions(versions);
-            Date    randomStartVersion = randomRangeVersions.first,
-                    randomEndVersion = randomRangeVersions.second;
-            int randomStartKey = getRandomKey(patientIDs);
-            int randomEndKey = getRandomKey(randomStartKey, patientIDs);
-            ArrayList<IRowDetails<Integer, TableRowIntDateCols, Date>> outputRows = new ArrayList<>();
-
-            Utils.assertTrue(randomStartKey<randomEndKey);
-//            Utils.assertTrue(randomStartVersion.compareTo(randomEndVersion));
-            // svrk
-//            System.out.println("random start version: "+ randomStartVersion + " \nrandom end version: "+ randomEndVersion + "\nrandom start key: " + randomStartKey + " \trandom end key: " + randomEndKey);
-//            System.out.printf("random start version:" + randomStartVersion);
-//            System.out.printf("random end version:" + randomEndVersion);
-//            System.out.printf("random start version:" + randomStartKey);
-//            System.out.printf("random end key:" + randomEndKey);
-            xtree.rangeSearch1(randomStartVersion, randomStartKey, randomEndKey, outputRows);
-//            System.out.println("output query1.1: "+outputRows);
-
-//            xtree.rangeSearch1(randomStartVersion, randomStartKey, randomStartKey, outputRows);
-//            System.out.println("output query1.2:"+outputRows);
+//    public static void main(String[] args) throws Exception {
+//        int partitionCapacity = 10;          // partitioning the DS within the table that stores versions
+//        // entails how many blocks within a partition
 //
-//            // mvsk
+//        int patientIDsCount = 1000;              // number of patients being generated
+//        int patientIDsPerDayCount = (int)(1.0 * patientIDsCount);
+//        // int patientIDsPerDayCount = 3;
+//        int datesCount = 5;                   // number of days
+//        int firstPatientID = 1;                 // indexing patient IDs
+//
+//        List<Date> versions = TableRowUtils.genVersions(datesCount);
+//        // gen keys
+//        ArrayList<Integer> patientIDs =
+//                genSortedNums(
+//                        firstPatientID,
+//                        1,
+//                        patientIDsCount);
+//
+//
+//        ToweredTypeUtils<Integer, TableRowIntDateCols> tableRowUtils =
+//                TableRowUtils.getUtils();
+//
+//        List<TableRowIntDateCols> data_ =
+//                TableRowUtils.getTableRowIntDateCols(
+//                        versions,
+//                        patientIDs,
+//                        patientIDsPerDayCount,
+//                        tableRowUtils);
+//        System.out.println("Total rows: " + data_.size());
+//        System.out.println(versions.get(0) + " " + versions.get(versions.size() - 1));
+//        /*
+//         * versions
+//         * data_
+//         * tableRowUtils
+//         */
+//
+//        Date firstVersion = versions.get(0);
+//        Date currentVersion = firstVersion;
+//
+//        Collections.sort(versions);
+//        Collections.sort(patientIDs);
+//
+//        System.out.println(versions.get(0) + " " + versions.get(versions.size() - 1));
+//
+//
+//
+//        IVersionsToKeysIndex<Date,Integer> versionsToKeysIndex = new VersionsToKeysIndex<>(firstVersion, patientIDsCount);
+//        XAVLTree xtree = new XAVLTree(firstVersion, versionsToKeysIndex, partitionCapacity, tableRowUtils);
+//
+//        insert(data_, currentVersion, xtree, false);
+////        System.out.println(xtree);
+////        System.out.println(versions);
+////        System.out.println(patientIDs);
+//
+//        // Print the dataset
+////        for (TableRowIntDateCols row: data_) {
+////            System.out.println(row);
+////        }
+//
+//        queryTest(versions, patientIDs, xtree, 1);
+//
+////        for (int i = 1; i < patientIDsCount+1; i++) {
+////            System.out.println(i);
+////            System.out.println(xtree);
+////            xtree.delete(i);
+////        }
+//    }
+//
+//
+//
+////    utility functions
+//    // ---------------------------------------------------------------------------
+//
+//    /**
+//     * Function to generate a random key from the provided list of keys
+//     * @param keys
+//     * @return
+//     */
+//    private static Integer getRandomKey(ArrayList<Integer> keys) {
+//        Random random = new Random();
+//        return keys.get(random.nextInt(keys.size()-1));
+//    }
+//
+//    /**
+//     * Function to ensure that the end range is greater than the start range
+//     * keys has to be sorted.
+//     * @param startKey
+//     * @param keys
+//     * @return
+//     */
+//    private static int getRandomKey(int startKey, ArrayList<Integer> keys) {
+//        Random random = new Random();
+//        int keyStartIndex = keys.indexOf(startKey);
+//        int keyEndIndex = random.nextInt(keys.size()-keyStartIndex-1)+keyStartIndex+1;
+//
+//        return keys.get(keyEndIndex);
+//    }
+//
+//    /**
+//     * Function to generate a random version from the provided list of versions
+//     * @param versions
+//     * @return
+//     */
+//    private static Date getRandomVersion(List<Date> versions) {
+//        return getRandomVersion(versions, 0,versions.size());
+//    }
+//    /**
+//     *
+//     * @param versions
+//     * @param startRange
+//     * @param endRange
+//     * @return
+//     */
+//    private static Date getRandomVersion(List<Date> versions, int startRange, int endRange){
+//        Random random = new Random();
+//        return versions.get(random.nextInt(endRange - startRange)+startRange);
+//    }
+//
+//    /**
+//     * this function requires the versions list to be sorted in ascending order.
+//     * @param versions
+//     * @param startRange
+//     * @param endRange
+//     * @return
+//     */
+//    private static TupleTwo<Date, Date> getRandomRangeVersions(List<Date> versions, int startRange, int endRange) {
+//        Date randVer1 = getRandomVersion(versions, startRange, endRange);
+//        Date randVer2 = getRandomVersion(versions, versions.indexOf(randVer1), endRange);
+//        TupleTwo<Date, Date> tuple = new TupleTwo<>(randVer1, randVer2);
+//        return tuple;
+//    }
+//
+//    /**
+//     *
+//     * @param init
+//     * @param step
+//     * @param count
+//     * @return
+//     */
+//    public static ArrayList<Integer> genSortedNums(int init, int step, int count) {
+//        // equivalent to range list in python.
+//        ArrayList<Integer> list = new ArrayList<>();
+//        int cur = init;
+//        for (int i = 0; i< count; i++) {
+//            list.add(cur);
+//            cur += step;
+//        }
+//        return list;
+//    }
+//
+//    // ---------------------------------------------------------------------------
+//    //    test functions
+//    // ---------------------------------------------------------------------------
+//
+//    /**
+//     * insert
+//     * @param data_
+//     * @param currentVersion
+//     * @param xtree
+//     * @param verbose
+//     * @throws Exception
+//     */
+//    public static void insert(
+//            List<TableRowIntDateCols> data_,
+//            Date currentVersion,
+//            XAVLTree xtree,
+//            boolean verbose)
+//            throws Exception {
+//        // Insert the dataset
+//        HashSet keySet = new HashSet<>();
+//        for (TableRowIntDateCols row : data_) {
+//            if(verbose) System.out.println(row.col1 + " | " + row.col2);
+//            // if new version immediately commit previous one and its BITMAP!
+//            if (!currentVersion.equals(row.col2)) {
+//                currentVersion = row.col2;
+//                xtree.commitCurrentVersion(currentVersion);
+//            }
+////            if(keySet.contains(row.getKey()))
+////                xtree.update(row);
+////            else {
+////                xtree.insert(row);
+////                keySet.add(row.getKey());
+////            }
+//
+//            xtree.insert(row);
+//
+//            // Print the tree
+//            if(verbose) System.out.println(xtree);
+//        }
+//    }
+//
+//    /**
+//     * query
+//     * @param versions
+//     * @param patientIDs
+//     * @param xtree
+//     * @throws Exception
+//     */
+//    private static void queryTest(List<Date> versions, ArrayList<Integer> patientIDs, XAVLTree xtree, int iterationCount)
+//            throws Exception {
+//        for (int i = 0; i < iterationCount; i++) {
+//            TupleTwo<Date, Date> randomRangeVersions = getRandomRangeVersions(versions, 0, versions.size());
+//            Date    randomStartVersion = randomRangeVersions.first,
+//                    randomEndVersion = randomRangeVersions.second;
+//            int randomStartKey = getRandomKey(patientIDs);
+//            int randomEndKey = getRandomKey(randomStartKey, patientIDs);
+//            ArrayList<IRowDetails<Integer, TableRowIntDateCols, Date>> outputRows = new ArrayList<>();
+//
+//            Utils.assertTrue(randomStartKey<randomEndKey);
+////            Utils.assertTrue(randomStartVersion.compareTo(randomEndVersion));
+//
+//            // Single Version Range Key (SVRK)
+////            System.out.println("random start version: "+ randomStartVersion + " \nrandom end version: "+ randomEndVersion + "\nrandom start key: " + randomStartKey + " \trandom end key: " + randomEndKey);
+//            System.out.println("Version Start: " + randomStartVersion + " | Version End: " + randomEndVersion);
+//            System.out.println("Start Key: " + randomStartKey + " | End Key: " + randomEndKey);
+//
+//            xtree.rangeSearch1(randomStartVersion, randomStartKey, randomEndKey, outputRows);
+//            System.out.println("SVRK: " + outputRows);
+////
+//            // Multi Version Single Key (MVSK)
 //            xtree.rangeSearch2(randomStartVersion, randomEndVersion, randomStartKey, outputRows);
-//            System.out.println("output query2.1:"+outputRows);
-
-            // boundary value condition check
-//            xtree.rangeSearch2(randomStartVersion, randomStartVersion, randomStartKey, outputRows);
-//            System.out.println("output query2.2:"+outputRows);
+//            System.out.println("MVSK: "+outputRows);
 //
-//            // mvrk
+//            // boundary value condition check
+////            xtree.rangeSearch2(randomStartVersion, randomStartVersion, randomStartKey, outputRows);
+////            System.out.println("output query2.2:"+outputRows);
+////
+//            //  Multi Value Range Key (MVRK)
 //            xtree.rangeSearch3(randomStartVersion, randomEndVersion, randomStartKey, randomEndKey, outputRows);
-//            System.out.println("output query3.1:"+outputRows);
-//            xtree.rangeSearch3(randomStartVersion, randomStartVersion, randomStartKey, randomEndKey, outputRows);
-//            System.out.println("output query3.2:"+outputRows);
-//            xtree.rangeSearch3(randomStartVersion, randomEndVersion, randomStartKey, randomStartKey, outputRows);
-//            System.out.println("output query3.3:"+outputRows);
-//            xtree.rangeSearch3(randomStartVersion, randomStartVersion, randomStartKey, randomStartKey, outputRows);
-//            System.out.println("output query3.4:"+outputRows);
+//            System.out.println("MVRK:" + outputRows);
+////            xtree.rangeSearch3(randomStartVersion, randomStartVersion, randomStartKey, randomEndKey, outputRows);
+////            System.out.println("output query3.2:"+outputRows);
+////            xtree.rangeSearch3(randomStartVersion, randomEndVersion, randomStartKey, randomStartKey, outputRows);
+////            System.out.println("output query3.3:"+outputRows);
+////            xtree.rangeSearch3(randomStartVersion, randomStartVersion, randomStartKey, randomStartKey, outputRows);
+////            System.out.println("output query3.4:"+outputRows);
 //
-//            // mvak
-//            xtree.rangeSearch4(randomStartVersion, randomEndVersion, outputRows);
-//            System.out.println("output query4.1:"+outputRows);
-//            xtree.rangeSearch4(randomStartVersion, randomStartVersion, outputRows);
-//            System.out.println("output query4.2:"+outputRows);
-        }
-    }
+//            // Multi Version All Key (MVAK)
+//             xtree.rangeSearch4(randomStartVersion, randomEndVersion, outputRows);
+//             System.out.println("MVAK: " + outputRows);
+////            xtree.rangeSearch4(randomStartVersion, randomStartVersion, outputRows);
+////            System.out.println("output query4.2:"+outputRows);
+//        }
+//    }
     // ---------------------------------------------------------------------------
 }

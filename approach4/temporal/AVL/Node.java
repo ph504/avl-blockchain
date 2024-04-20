@@ -47,15 +47,15 @@ public class Node<KVER extends Comparable<KVER>,K extends Comparable<K>, V exten
         this.height = 1;
     }
 
-    private static ArrayList<Integer> genSortedNums(int init, int step, int count) {
-        ArrayList<Integer> list = new ArrayList<>();
-        int cur = init;
-        for (int i = 0; i< count; i++) {
-            list.add(cur);
-            cur += step;
-        }
-        return list;
-    }
+//    private static ArrayList<Integer> genSortedNums(int init, int step, int count) {
+//        ArrayList<Integer> list = new ArrayList<>();
+//        int cur = init;
+//        for (int i = 0; i< count; i++) {
+//            list.add(cur);
+//            cur += step;
+//        }
+//        return list;
+//    }
 
 
     public void processDigest(ToweredTypeUtils<K,V> toweredTypeUtils) throws Exception {
@@ -110,67 +110,67 @@ public class Node<KVER extends Comparable<KVER>,K extends Comparable<K>, V exten
         return Utils.getHash(curNodeDigest, children_digest);
     }
 
-    public static void main(String[] args) throws Exception{
-
-        int patientIDsSize = 3;
-        int patientIDsPerDayCount = 3;
-        int datesCount = 1;
-        int firstPatientID = 100;
-
-        LocalDate startLocalDate = LocalDate.of(2024, Month.MARCH, 10);
-        LocalDate currentLocalDate = startLocalDate;
-        ZoneId defaultZoneId = ZoneId.systemDefault();
-        ArrayList<Date> sequentialDates = new ArrayList<>(); // Dates starting from 2015 until datesCount goes to zero
-
-        while (datesCount > 0) {
-            Date currentDate = Date.from(currentLocalDate.atStartOfDay(defaultZoneId).toInstant());
-            sequentialDates.add(currentDate);
-            currentLocalDate = currentLocalDate.plusDays(1);
-            datesCount--;
-        }
-
-        ArrayList<Integer> patientIDs = genSortedNums(firstPatientID, 1, patientIDsSize);
-
-        // Generate data
-        ArrayList<TupleTwo<Integer, Date>> data = new ArrayList<>();
-        for (Date date : sequentialDates) {
-            Collections.shuffle(patientIDs);
-            for (int i=0; i<patientIDsPerDayCount; i++) {
-                data.add(new TupleTwo<>(patientIDs.get(i), date));
-            }
-        }
-
-        // Get list of versions only
-        HashSet<Date> versions_ = new HashSet<>();
-        for (TupleTwo<Integer, Date> row : data) {
-            versions_.add(row.second);
-        }
-        List<Date> versions = TableRowUtils.getColumns(data);
-
-
-        ITypeUtils<Integer> integerClassUtils = new IntegerClassUtils();
-        ITypeUtils<TableRowIntDateCols> TableRowUtils = new TableRowUtils();
-        ToweredTypeUtils<Integer, TableRowIntDateCols> tableIntDateColsIndexTypeUtils = new ToweredTypeUtils<>(integerClassUtils, TableRowUtils);
-        ToweredTypeUtils<Integer, TableRowIntDateCols> toweredTypeUtils = new ToweredTypeUtils<>(integerClassUtils, TableRowUtils);
-
-
-        // Convert data to type data_
-        List<TableRowIntDateCols> data_ = new ArrayList<>(data.size());
-        for (TupleTwo<Integer, Date> row : data) {
-            TableRowIntDateCols tr = new TableRowIntDateCols(row.first, row.second, tableIntDateColsIndexTypeUtils.vTypeUtils);
-            data_.add(tr);
-        }
-
-
-        for (TableRowIntDateCols row: data_) {
-            System.out.println(row.col1 + ", " + row.col2);
-            //int key = row.getKey();
-            Node<Date,Integer,TableRowIntDateCols> node = new Node<>(row.col2, row, 1);
-            node.processDigest(toweredTypeUtils);
-            // System.out.println(node);
-        }
-
-    }
+//    public static void main(String[] args) throws Exception{
+//
+//        int patientIDsSize = 3;
+//        int patientIDsPerDayCount = 3;
+//        int datesCount = 1;
+//        int firstPatientID = 100;
+//
+//        LocalDate startLocalDate = LocalDate.of(2024, Month.MARCH, 10);
+//        LocalDate currentLocalDate = startLocalDate;
+//        ZoneId defaultZoneId = ZoneId.systemDefault();
+//        ArrayList<Date> sequentialDates = new ArrayList<>(); // Dates starting from 2015 until datesCount goes to zero
+//
+//        while (datesCount > 0) {
+//            Date currentDate = Date.from(currentLocalDate.atStartOfDay(defaultZoneId).toInstant());
+//            sequentialDates.add(currentDate);
+//            currentLocalDate = currentLocalDate.plusDays(1);
+//            datesCount--;
+//        }
+//
+//        ArrayList<Integer> patientIDs = genSortedNums(firstPatientID, 1, patientIDsSize);
+//
+//        // Generate data
+//        ArrayList<TupleTwo<Integer, Date>> data = new ArrayList<>();
+//        for (Date date : sequentialDates) {
+//            Collections.shuffle(patientIDs);
+//            for (int i=0; i<patientIDsPerDayCount; i++) {
+//                data.add(new TupleTwo<>(patientIDs.get(i), date));
+//            }
+//        }
+//
+//        // Get list of versions only
+//        HashSet<Date> versions_ = new HashSet<>();
+//        for (TupleTwo<Integer, Date> row : data) {
+//            versions_.add(row.second);
+//        }
+//        List<Date> versions = TableRowUtils.getColumns(data);
+//
+//
+//        ITypeUtils<Integer> integerClassUtils = new IntegerClassUtils();
+//        ITypeUtils<TableRowIntDateCols> TableRowUtils = new TableRowUtils();
+//        ToweredTypeUtils<Integer, TableRowIntDateCols> tableIntDateColsIndexTypeUtils = new ToweredTypeUtils<>(integerClassUtils, TableRowUtils);
+//        ToweredTypeUtils<Integer, TableRowIntDateCols> toweredTypeUtils = new ToweredTypeUtils<>(integerClassUtils, TableRowUtils);
+//
+//
+//        // Convert data to type data_
+//        List<TableRowIntDateCols> data_ = new ArrayList<>(data.size());
+//        for (TupleTwo<Integer, Date> row : data) {
+//            TableRowIntDateCols tr = new TableRowIntDateCols(row.first, row.second, tableIntDateColsIndexTypeUtils.vTypeUtils);
+//            data_.add(tr);
+//        }
+//
+//
+//        for (TableRowIntDateCols row: data_) {
+//            System.out.println(row.col1 + ", " + row.col2);
+//            //int key = row.getKey();
+//            Node<Date,Integer,TableRowIntDateCols> node = new Node<>(row.col2, row, 1);
+//            node.processDigest(toweredTypeUtils);
+//            // System.out.println(node);
+//        }
+//
+//    }
 
     @Override
     public String toString() {

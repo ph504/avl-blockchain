@@ -177,9 +177,9 @@ public class Main {
         // Starts off everything
         collectEvaluationResultsScenario2(logPrefix, logPostfix, itemsCounts, versionsCounts, runs, keysPercentsCounts);
 
-        String collectEvaluationResults3InputCsvFilePath = prop.getProperty("collectEvaluationResults3InputCsvFilePath");
-        double collectEvaluationResults3keysPercentsCounts = Double.parseDouble(prop.getProperty("collectEvaluationResults3keysPercentsCounts"));
-        CsvReader csvReader = new CsvReader(collectEvaluationResults3InputCsvFilePath);
+//        String collectEvaluationResults3InputCsvFilePath = prop.getProperty("collectEvaluationResults3InputCsvFilePath");
+//        double collectEvaluationResults3keysPercentsCounts = Double.parseDouble(prop.getProperty("collectEvaluationResults3keysPercentsCounts"));
+//        CsvReader csvReader = new CsvReader(collectEvaluationResults3InputCsvFilePath);
 //        collectEvaluationResultsScenario33(logPrefix, logPostfix, collectEvaluationResults3keysPercentsCounts, csvReader);
 
 
@@ -1028,10 +1028,6 @@ public class Main {
             index = new MerkleKDTreeIntDateWrapper();
             Map<String, Object> merkleKDTreeIndexRunRes = SearchMVScenarios("merkleKDTreeIndex", index, data_, percent);
             writeScenarioResultsToFile(pathMerkleKDTreeIndexScenario, merkleKDTreeIndexRunRes);
-
-
-
-
 
             // TODO find scenario to strictly increasing keys only, which can use VersionsToConsecutiveKeysIndex
 //            changeKeysToConsecutiveKeys(data);

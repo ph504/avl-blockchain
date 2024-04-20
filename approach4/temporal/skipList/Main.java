@@ -985,6 +985,7 @@ public class Main {
         int datesCount = versionsCount;
         int firstPatientID = 1;
         double patientsPerDateRatio = 0.8;
+        // double patientsPerDateRatio = 1.0;
 
         ToweredTypeUtils<Integer, TableRowIntDateCols> tableIntDateColsIndexTypeUtils = getTableIntDateColsIndexTypeUtils();
 
@@ -1021,7 +1022,7 @@ public class Main {
 
             // instantiate the DS that maps version nodes in an avl tree to bitmaps of keys
             // inputs to constructor: initversion=firstversion and keyscapacity=data.size()
-            IVersionsToKeysIndex<Date, Integer> versionsToKeysIndex = new VersionsToKeysIndex<>(firstVersion, data.size());
+            IVersionsToKeysIndex<Date, Integer> versionsToKeysIndex = new VersionsToKeysIndex<>(firstVersion, data.size()); // data.size()? Not # patients?
 
             // AVL TREE
             index = new XAVLTree(
