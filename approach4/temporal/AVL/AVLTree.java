@@ -289,7 +289,7 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
         if (y == z.leftChild && x == y.leftChild) {
             rightRotate(z);
             // y is root, x is l child, z is r child
-            x.processDigest(this.toweredTypeUtils);
+            // x.processDigest(this.toweredTypeUtils);
             z.processDigest(this.toweredTypeUtils);
             y.processDigest(this.toweredTypeUtils);
             return y;
@@ -305,7 +305,7 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
             leftRotate(z);
             // y is root, z is l child, x is r child
             z.processDigest(this.toweredTypeUtils);
-            x.processDigest(this.toweredTypeUtils);
+            // x.processDigest(this.toweredTypeUtils);
             y.processDigest(this.toweredTypeUtils);
             return y;
         } else if (y == z.rightChild && x == y.leftChild) {
@@ -383,6 +383,7 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
         if (node == null) return 0;
         return node.height;
     }
+
 
     private int numChildren(Node<VersionType, KeyType, BucketRowType> node) throws Exception {
         int count = 0;
@@ -749,9 +750,9 @@ public class AVLTree<VersionType extends Comparable<VersionType>,KeyType extends
 
     // demo tests
     public static void main(String[] args) throws Exception {
-        Scanner s = new Scanner(System.in);
+//        Scanner s = new Scanner(System.in);
 //        demoRandomSamples(s);
-
+//
 //        demoInput(s,s);
     }
 

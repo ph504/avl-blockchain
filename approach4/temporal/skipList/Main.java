@@ -985,7 +985,7 @@ public class Main {
         int datesCount = versionsCount;
         int firstPatientID = 1;
         double patientsPerDateRatio = 0.8;
-        // double patientsPerDateRatio = 1.0;
+//        double patientsPerDateRatio = 1.0;
 
         ToweredTypeUtils<Integer, TableRowIntDateCols> tableIntDateColsIndexTypeUtils = getTableIntDateColsIndexTypeUtils();
 
@@ -997,7 +997,7 @@ public class Main {
             for (TupleTwo<Integer, Date> row : data) {
                 versions_.add(row.second); // versions_ is a set/list of dates
             }
-            System.out.println(data.size());
+            // System.out.println(data.size() + ", " + partitionCapacity);
 
             // sorting versions_
             List<Date> versions = versions_.stream()

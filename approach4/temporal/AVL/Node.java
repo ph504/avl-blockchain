@@ -1,17 +1,8 @@
 package approach4.temporal.AVL;
 import approach4.IRowDetails;
-import approach4.ITypeUtils;
-import approach4.TupleTwo;
 import approach4.temporal.skipList.ToweredTypeUtils;
 import approach4.temporal.temporalPartitions.Partitions;
 import approach4.Utils;
-import approach4.typeUtils.IntegerClassUtils;
-import approach4.typeUtils.TableRowUtils;
-import approach4.valueDataStructures.TableRowIntDateCols;
-
-import java.time.LocalDate;
-import java.time.Month;
-import java.time.ZoneId;
 import java.util.*;
 
 public class Node<KVER extends Comparable<KVER>,K extends Comparable<K>, V extends IRowDetails<K, V, KVER>> {
@@ -61,7 +52,7 @@ public class Node<KVER extends Comparable<KVER>,K extends Comparable<K>, V exten
     public void processDigest(ToweredTypeUtils<K,V> toweredTypeUtils) throws Exception {
         this.digest = getNodeDigest(this, toweredTypeUtils);
 //        System.out.println("Recalculated digest of node: " + this.key + ", lChild: " + this.leftChild.key + ", rChild: " + this.rightChild.key);
-//
+
 //        StringBuilder sb = new StringBuilder("Recalculated digest of node: ");
 //        sb.append(this.key);
 //
@@ -79,7 +70,7 @@ public class Node<KVER extends Comparable<KVER>,K extends Comparable<K>, V exten
 //            sb.append("null");
 //        }
 //        System.out.println(sb);
-//
+
 //        for (byte b : this.digest) {
 //            System.out.printf("%02X ", b);
 //        }
