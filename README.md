@@ -2,6 +2,7 @@
 * University of New Brunswick
 * Big Data Systems Course - CS6545
 * Instructor: Dr. Suprio Ray
+* Winter 2023
 
 Contributors
 * @ph504, arya.parvizi@unb.ca 
